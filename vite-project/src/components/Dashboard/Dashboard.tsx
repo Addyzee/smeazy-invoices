@@ -1,3 +1,4 @@
+// Dashboard.tsx
 import StatsCard from "./StatsCard";
 import TransactionsTable from "./TransactionsTable";
 import RevenueChart from "./RevenueChart";
@@ -26,9 +27,9 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans flex">
       {/* Sidebar */}
-      <aside className="fixed h-screen w-16 bg-white shadow-lg p-4 flex flex-col items-center space-y-6">
+      <aside className="fixed h-screen w-16 bg-white shadow-lg p-4 flex flex-col items-center space-y-6 z-40">
         <div className="text-blue-600">📊</div>
         <div className="text-gray-500">🏠</div>
         <div className="text-gray-500">📋</div>
@@ -37,12 +38,16 @@ const Dashboard: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="ml-16 p-6">
+      <div className="ml-16 p-6 flex-1">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">Dashboard</h1>
-          <button onClick={() => setShowInvoiceModal(true)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">Create an Invoice</button>
-          {showInvoiceModal && <CreateInvoice onClose={() => setShowInvoiceModal(false)} />}
+          <button 
+            onClick={() => setShowInvoiceModal(true)} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          >
+            Create an Invoice
+          </button>
         </div>
 
         {/* Stats Cards */}
@@ -87,7 +92,9 @@ const Dashboard: React.FC = () => {
               total: t.amount,
             }))}
           />
-        </div>{showInvoiceModal && <CreateInvoice onClose={() => setShowInvoiceModal(false)} />}
+        </div>
+
+        {showInvoiceModal && <CreateInvoice onClose={() => setShowInvoiceModal(false)} />}
       </div>
     </div>
   );

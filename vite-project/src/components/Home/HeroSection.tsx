@@ -1,3 +1,4 @@
+// HeroSection.tsx
 import React from 'react';
 import { Button } from '../UI/Button';
 
@@ -15,9 +16,9 @@ export const HeroSection: React.FC<HeroProps> = ({
   onViewDemo 
 }) => {
   return (
-    <section className="hero-gradient text-center py-20 px-6 flex items-center justify-center">
+    <section className="text-center py-20 px-6 flex items-center justify-center">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-6xl md:text-7xl font-extrabold text-white hero-text tracking-tight">
+        <h2 className="text-6xl md:text-7xl font-extrabold text-white tracking-tight">
           {title}
         </h2>
         <p className="mt-6 text-xl md:text-2xl text-white max-w-2xl mx-auto">

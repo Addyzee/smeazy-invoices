@@ -1,13 +1,12 @@
+// Home.tsx
 import React from "react";
 import { FaCreditCard, FaChartBar, FaUsers } from "react-icons/fa";
 import { HeroSection } from "./HeroSection";
-import { Navbar } from "../Navbar";
 import { DashboardPreview } from "./DashboardPreview";
 import { FeaturesSection } from "./FeaturesSection";
 import { Footer } from "./Footer";
 
 const Home: React.FC = () => {
-  // Sample data - in a real app, this would come from props or state management
   const dashboardData = {
     invoices: 101,
     payments: 20,
@@ -21,27 +20,10 @@ const Home: React.FC = () => {
   };
 
   const features = [
-    {
-      icon: <FaCreditCard />,
-      title: "Seamless Payments",
-      description: "Integrate mobile money, cards, and bank transfers with real-time tracking."
-    },
-    {
-      icon: <FaChartBar />,
-      title: "Powerful Analytics",
-      description: "Gain actionable insights with detailed reports to grow your business."
-    },
-    {
-      icon: <FaUsers />,
-      title: "Customer Management",
-      description: "Engage customers with personalized billing and payment experiences."
-    }
+    { icon: <FaCreditCard />, title: "Seamless Payments", description: "Integrate mobile money, cards, and bank transfers with real-time tracking." },
+    { icon: <FaChartBar />, title: "Powerful Analytics", description: "Gain actionable insights with detailed reports to grow your business." },
+    { icon: <FaUsers />, title: "Customer Management", description: "Engage customers with personalized billing and payment experiences." }
   ];
-
-  // Event handlers
-  const handleSignIn = () => {
-    console.log("Sign in clicked");
-  };
 
   const handleGetStarted = () => {
     console.log("Get started clicked");
@@ -56,28 +38,20 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans min-w-full flex flex-col justify-center items-center">
-      <Navbar 
-        brand="SMEazy"
-        onSignIn={handleSignIn}
-      />
-      
+    <div className="relative z-10">
       <HeroSection
         title="Supercharge Your Business Billing"
         subtitle="Optimize payments, invoices, and analytics with our powerful billing tools. Unlock more with seamless integrations."
         onGetStarted={handleGetStarted}
         onViewDemo={handleViewDemo}
       />
-      
       <DashboardPreview 
         data={dashboardData}
         onAddNew={handleAddNew}
       />
-      
       <FeaturesSection 
         features={features}
       />
-      
       <Footer 
         companyName="SMEazy"
         year={2025}

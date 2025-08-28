@@ -21,11 +21,11 @@ export const Footer: React.FC<FooterProps> = ({
   ]
 }) => {
   return (
-    <footer className="bg-white py-8 text-center border-t border-gray-200">
-      <p className="text-gray-500 text-sm">
+    <footer className="py-8 text-center border-t">
+      <p className="text-white-500 text-sm">
         © {year} {companyName}. All rights reserved.
       </p>
-      <div className="mt-4 space-x-6 text-gray-600">
+      <div className="mt-4 space-x-6 text-white-600">
         {links.map((link, index) => (
           <a 
             key={index}

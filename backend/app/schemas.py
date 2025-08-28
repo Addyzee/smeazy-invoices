@@ -2,36 +2,64 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
-class LineItemBase(BaseModel):
-    product_name: str
-    unit_price: float
-    quantity: int
-    discount: Optional[float] = None
-    tax_rate: Optional[float] = None
+class UserBase(BaseModel):
+    phone_number: str
+    role: str  # BUSINESS or CUSTOMER
 
-class LineItemCreate(LineItemBase):
-    pass
 
-class LineItem(LineItemBase):
+class BusinessUserCreate(UserBase):
+    business_name: str
+    password: str
+
+
+class CustomerUserCreate(UserBase):
+    password: str
+
+
+class UserOut(BaseModel):
     id: int
+    role: str
+    phone_number: str
+    business_name: Optional[str] = None
+    created_at: datetime
+
     class Config:
         orm_mode = True
 
 
+class LineItemBase(BaseModel):
+    product_name: str
+    unit_price: float
+    quantity: int
+    transaction_value: float
+
+
+class LineItemCreate(LineItemBase):
+    pass
+
+
+class LineItemOut(LineItemBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+# ---------- Invoice ----------
 class InvoiceBase(BaseModel):
-    invoice_number: str
+    business_id: int
+    customer_id: int
     total_amount: float
-    status: str = "DRAFT"
-    issue_date: datetime
-    due_date: Optional[datetime] = None
-    notes: Optional[str] = None
+
 
 class InvoiceCreate(InvoiceBase):
-    customer_id: int
     line_items: List[LineItemCreate]
 
-class Invoice(InvoiceBase):
+
+class InvoiceOut(InvoiceBase):
     id: int
-    line_items: List[LineItem] = []
+    created_at: datetime
+    line_items: List[LineItemOut]
+
     class Config:
         orm_mode = True

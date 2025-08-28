@@ -1,12 +1,10 @@
-// components/Home/Home.tsx
 import React from "react";
 import { FaCreditCard, FaChartBar, FaUsers } from "react-icons/fa";
 import { HeroSection } from "./HeroSection";
-import { Navbar } from "./Navigation";
+import { Navbar } from "../Navbar";
 import { DashboardPreview } from "./DashboardPreview";
 import { FeaturesSection } from "./FeaturesSection";
 import { Footer } from "./Footer";
-
 
 const Home: React.FC = () => {
   // Sample data - in a real app, this would come from props or state management

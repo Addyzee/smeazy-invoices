@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, Float
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -7,11 +7,12 @@ from .database import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    role = Column(String, default="CUSTOMER")  # CUSTOMER | BUSINESS
-    business_name = Column(String, nullable=True)
+    username = Column(String, unique=True, index=True)
+    full_name = Column(String, nullable=False)
     phone_number = Column(String, unique=True, index=True)
     password = Column(String)  # hashed
     created_at = Column(DateTime, default=datetime.now)
+    disabled = Column(Boolean, default=False)
 
     # relationships
     invoices_sent = relationship("Invoice", back_populates="business", foreign_keys="Invoice.business_id")
@@ -25,6 +26,7 @@ class Invoice(Base):
     id = Column(Integer, primary_key=True, index=True)
     business_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    business_name = Column(String, nullable=False)
     total_amount = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
 

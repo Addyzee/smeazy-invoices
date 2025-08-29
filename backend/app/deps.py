@@ -1,20 +1,54 @@
+from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
-from app.security import decode_access_token
+from app.security import SECRET_KEY, ALGORITHM
+from app.schemas import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+import jwt
+from jwt.exceptions import InvalidTokenError
+from app.crud import get_user, get_user_by_phone
+from app.security import verify_password
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    payload = decode_access_token(token)
-    if payload is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
-    user_id = payload.get("sub")
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user(db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
     return user
+
+
+async def get_current_active_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+def authenticate_user(db: Session, phone_number: str, password: str):
+    user = get_user_by_phone(db, phone_number)
+    if not user:
+        return False
+    if not verify_password(password, user.password):
+        return False
+    return user
+
+

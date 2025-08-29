@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from "react";
 
-interface Item {
+interface LineItem {
   id: number;
-  description: string;
+  product_name: string;
   quantity: number;
-  rate: number;
+  unit_price: number;
 }
 
 interface CreateInvoiceProps {
@@ -12,151 +12,185 @@ interface CreateInvoiceProps {
 }
 
 const CreateInvoice: React.FC<CreateInvoiceProps> = ({ onClose }) => {
+  const [loading, setLoading] = useState(false);
   const [invoice, setInvoice] = useState({
-    clientName: '',
-    clientEmail: '',
-    address: '',
-    invoiceNumber: '',
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
-    currency: 'KES',
-    items: [{ id: 1, description: '', quantity: 1, rate: 0 }] as Item[],
+    business_id: 2, 
+    customer: {
+      name: "",
+      phone_number: "",
+    },
+    line_items: [{ id: 1, product_name: "", quantity: 1, unit_price: 0 }] as LineItem[],
   });
 
   const addItem = () => {
-    setInvoice(prev => ({
+    setInvoice((prev) => ({
       ...prev,
-      items: [...prev.items, { id: prev.items.length + 1, description: '', quantity: 1, rate: 0 }],
+      line_items: [
+        ...prev.line_items,
+        { id: prev.line_items.length + 1, product_name: "", quantity: 1, unit_price: 0 },
+      ],
     }));
   };
 
   const updateItem = (id: number, field: string, value: string | number) => {
-    setInvoice(prev => ({
+    setInvoice((prev) => ({
       ...prev,
-      items: prev.items.map(item =>
-        item.id === id ? { ...item, [field]: field === 'description' ? value : Number(value) } : item
+      line_items: prev.line_items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: field === "product_name" ? value : Number(value),
+            }
+          : item
       ),
     }));
   };
 
   const removeItem = (id: number) => {
-    setInvoice(prev => ({
+    setInvoice((prev) => ({
       ...prev,
-      items: prev.items.filter(item => item.id !== id),
+      line_items: prev.line_items.filter((item) => item.id !== id),
     }));
   };
 
-  const calculateItemTotal = (item: Item) => {
-    return item.quantity * item.rate;
+  const calculateItemTotal = (item: LineItem) => {
+    return item.quantity * item.unit_price;
   };
 
   const calculateTotal = () => {
-    return invoice.items.reduce((total, item) => total + calculateItemTotal(item), 0);
+    return invoice.line_items.reduce(
+      (total, item) => total + calculateItemTotal(item),
+      0
+    );
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const payload = {
+        business_id: invoice.business_id,
+        total_amount: calculateTotal(),
+        customer: {
+          name: invoice.customer.name,
+          phone_number: invoice.customer.phone_number,
+        },
+        line_items: invoice.line_items.map((item) => ({
+          product_name: item.product_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        })),
+      };
+
+      const response = await fetch("http://localhost:8000/invoices/with-customer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create invoice");
+      }
+
+      alert("Invoice created successfully!");
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert("Error creating invoice");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Invoice Details</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Invoice Details
+        </h2>
+        
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-gray-700">Bill To</label>
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+            <label className="block text-gray-700 mb-2">Customer Information</label>
+            <div className="space-y-2">
               <input
                 type="text"
-                value={invoice.clientName}
-                onChange={(e) => setInvoice({ ...invoice, clientName: e.target.value })}
-                placeholder="Johnathon Doe"
+                value={invoice.customer.name}
+                onChange={(e) =>
+                  setInvoice({ 
+                    ...invoice, 
+                    customer: { ...invoice.customer, name: e.target.value }
+                  })
+                }
+                placeholder="Customer Name"
                 className="border rounded-lg p-2 w-full"
               />
               <input
-                type="email"
-                value={invoice.clientEmail}
-                onChange={(e) => setInvoice({ ...invoice, clientEmail: e.target.value })}
-                placeholder="john.doe@gmail.com"
+                type="text"
+                value={invoice.customer.phone_number}
+                onChange={(e) =>
+                  setInvoice({ 
+                    ...invoice, 
+                    customer: { ...invoice.customer, phone_number: e.target.value }
+                  })
+                }
+                placeholder="Phone Number (e.g., +254732898412)"
                 className="border rounded-lg p-2 w-full"
               />
             </div>
-            <input
-              type="text"
-              value={invoice.address}
-              onChange={(e) => setInvoice({ ...invoice, address: e.target.value })}
-              placeholder="16/345 Palatial Avenue, South Mascot, 2026"
-              className="border rounded-lg p-2 w-full mt-2"
-            />
           </div>
+          
           <div>
-            <label className="block text-gray-700">Invoice Number</label>
-            <input
-              type="text"
-              value={invoice.invoiceNumber}
-              onChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
-              placeholder="#0045"
-              className="border rounded-lg p-2 w-full"
-            />
-            <div className="flex space-x-4 mt-2">
-              <div>
-                <label className="block text-gray-700">Issue Date</label>
-                <input
-                  type="date"
-                  value={invoice.issueDate}
-                  onChange={(e) => setInvoice({ ...invoice, issueDate: e.target.value })}
-                  className="border rounded-lg p-2 w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700">Due Date</label>
-                <input
-                  type="date"
-                  value={invoice.dueDate}
-                  onChange={(e) => setInvoice({ ...invoice, dueDate: e.target.value })}
-                  className="border rounded-lg p-2 w-full"
-                />
-              </div>
-            </div>
-            <div className="mt-2">
-              <label className="block text-gray-700">Currency</label>
-              <select
-                value={invoice.currency}
-                onChange={(e) => setInvoice({ ...invoice, currency: e.target.value })}
+            <label className="block text-gray-700 mb-2">Business Information</label>
+            <div>
+              <label className="block text-sm text-gray-600">Business ID</label>
+              <input
+                type="number"
+                value={invoice.business_id}
+                onChange={(e) =>
+                  setInvoice({ ...invoice, business_id: Number(e.target.value) })
+                }
                 className="border rounded-lg p-2 w-full"
-              >
-                <option value="KES">KES - Kenya Shillings</option>
-              </select>
+              />
             </div>
           </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Items</h3>
+
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Line Items</h3>
         <div className="grid grid-cols-5 gap-2 mb-2 font-semibold text-gray-700">
-          <div className="col-span-2 p-2 text-left">Item Description</div>
-          <div className="p-2 text-center">Item Quantity</div>
-          <div className="p-2 text-center">Item Rate</div>
-          <div className="p-2 text-center">Total Amount</div>
-          <div className="p-2 text-center"></div>
+          <div className="col-span-2 p-2 text-left">Product Name</div>
+          <div className="p-2 text-center">Quantity</div>
+          <div className="p-2 text-center">Unit Price</div>
+          <div className="p-2 text-center">Total</div>
+          <div></div>
         </div>
-        {invoice.items.map((item) => (
+
+        {invoice.line_items.map((item) => (
           <div key={item.id} className="grid grid-cols-5 gap-2 mb-2 items-center">
             <input
               type="text"
-              value={item.description}
-              onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-              placeholder="Description"
+              value={item.product_name}
+              onChange={(e) => updateItem(item.id, "product_name", e.target.value)}
+              placeholder="Product Name"
               className="border rounded-lg p-2 col-span-2"
             />
             <input
               type="number"
               value={item.quantity}
-              onChange={(e) => updateItem(item.id, 'quantity', e.target.value)}
+              onChange={(e) => updateItem(item.id, "quantity", e.target.value)}
               placeholder="Qty"
               className="border rounded-lg p-2 text-center"
+              min="1"
             />
             <input
               type="number"
-              value={item.rate}
-              onChange={(e) => updateItem(item.id, 'rate', e.target.value)}
-              placeholder="Rate"
+              value={item.unit_price}
+              onChange={(e) => updateItem(item.id, "unit_price", e.target.value)}
+              placeholder="Unit Price"
               className="border rounded-lg p-2 text-center"
+              min="0"
+              step="0.01"
             />
             <input
               type="number"
@@ -167,23 +201,37 @@ const CreateInvoice: React.FC<CreateInvoiceProps> = ({ onClose }) => {
             <button
               onClick={() => removeItem(item.id)}
               className="text-red-500 hover:text-red-700"
+              disabled={invoice.line_items.length === 1}
             >
               ✗
             </button>
           </div>
         ))}
-        <button
-          onClick={addItem}
-          className="text-blue-600 hover:text-blue-800 mt-2"
-        >
+
+        <button onClick={addItem} className="text-blue-600 hover:text-blue-800 mt-2">
           + Add Item
         </button>
+
         <div className="mt-4 text-right">
-          <p className="text-gray-700">Total: KES {calculateTotal().toFixed(2)}</p>
+          <p className="text-gray-700 text-lg font-semibold">
+            Total Amount: KES {calculateTotal().toFixed(2)}
+          </p>
         </div>
+
         <div className="flex justify-between mt-6">
-          <button onClick={onClose} className="px-4 py-2 bg-orange-200 text-orange-800 rounded-lg">Cancel</button>
-          <button className="px-4 py-2 bg-orange-500 text-white rounded-lg">Complete</button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-orange-200 text-orange-800 rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg disabled:opacity-50"
+          >
+            {loading ? "Creating Invoice..." : "Create Invoice"}
+          </button>
         </div>
       </div>
     </div>

@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #059669; /* emerald-600 */
+  --color-secondary: #0284c7; /* blue-600 */
+  --color-accent: #9333ea; /* purple-600 */
+  --color-warning-red: #dc2626; /* red-600 */
+}
+
+@layer base {
+  body {
+    @apply h-screen w-screen overflow-hidden p-0 bg-gradient-to-br ;
+  }
+  #root {
+    @apply h-full w-full p-0 overflow-y-scroll m-0 bg-gradient-to-br from-gray-50 to-primary/30;
+  }
+}

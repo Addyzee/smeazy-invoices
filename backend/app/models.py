@@ -1,7 +1,8 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime, Float
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, DateTime, Float, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
+import enum
 
 
 class User(Base):
@@ -17,7 +18,28 @@ class User(Base):
     # relationships
     invoices_sent = relationship("Invoice", back_populates="business", foreign_keys="Invoice.business_id")
     invoices_received = relationship("Invoice", back_populates="customer", foreign_keys="Invoice.customer_id")
+    user_stats = relationship("UserStats", back_populates="user")
 
+
+class UserStats(Base):
+    __tablename__ = "user_stats"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    total_invoices_sent = Column(Integer, default=0)
+    total_invoices_received = Column(Integer, default=0)
+    total_amount_paid_in = Column(Float, default=0.0)
+    total_amount_paid_out = Column(Float, default=0.0)
+    
+
+    # relationships
+    user = relationship("User", back_populates="user_stats")
+    
+class InvoiceStatus(enum.Enum):
+    draft = "draft"
+    sent = "sent"
+    paid = "paid"
+    overdue = "overdue"
+    cancelled = "cancelled"
 
 
 class Invoice(Base):
@@ -26,15 +48,19 @@ class Invoice(Base):
     id = Column(Integer, primary_key=True, index=True)
     business_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    invoice_number = Column(String, nullable=False, unique=True, index=True)
     business_name = Column(String, nullable=False)
     total_amount = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
+    due_date = Column(DateTime, nullable=False)
+    status = Column(Enum(InvoiceStatus), default=InvoiceStatus.draft, nullable=False)
+    notes = Column(String, default="")
 
     # relationships
     business = relationship("User", foreign_keys=[business_id], back_populates="invoices_sent")
     customer = relationship("User", foreign_keys=[customer_id], back_populates="invoices_received")
-    line_items = relationship("LineItem", back_populates="invoice", cascade="all, delete")
-    
+    line_items = relationship("LineItem", back_populates="invoice", cascade="all, delete-orphan")
+
 
 
 class LineItem(Base):

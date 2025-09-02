@@ -12,10 +12,6 @@ api_key = "atsk_28e13f1f258c83c1adad736397c902f3679dd368a094dc97c2b1e83d7addad22
 africastalking.initialize(username, api_key)
 
 
-
-from datetime import datetime
-from sqlalchemy.orm import InstanceState
-
 def format_invoice(invoice) -> str:
     created_at = (
         invoice.created_at.strftime("%d %b %Y, %I:%M %p")

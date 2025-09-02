@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from .. import schemas, crud, database
 from app.models import User
 from app.security import create_access_token
-from app.deps import get_current_user, authenticate_user
+from app.deps import get_current_active_user, authenticate_user
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
-from app.schemas import Token
+from app.schemas import TokenType
 from app.security import ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 
@@ -15,15 +15,16 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me")
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_active_user)):
     return {
         "full_name": current_user.full_name,
         "username": current_user.username,
-        "phone": current_user.phone_number,
+        "phone_number": current_user.phone_number,
+        "created_at": current_user.created_at
     }
 
 
-@router.post("/user/register", response_model=schemas.UserOut)
+@router.post("/register", response_model=schemas.UserOut)
 def register_user(
     user: schemas.UserCreate, db: Session = Depends(database.get_db)
 ):
@@ -37,7 +38,7 @@ def register_user(
 @router.post("/token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(database.get_db)
-) -> Token:
+) -> TokenType:
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -49,4 +50,4 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return TokenType(access_token=access_token, username=user.username, token_type="bearer")

@@ -1,26 +1,16 @@
-import React from "react";
-import { AuthSelector, LoginForm, RegistrationForm } from "./AuthForms";
+import { useAuthStore } from "../store";
+import { AuthForms } from "./AuthForms";
+import { AuthSelector } from "./AuthSelector";
 
 export const AuthPage = () => {
-  const [selectedAction, setSelectedAction] = React.useState<
-    "login" | "register" | null
-  >(null);
+  const selectedAction = useAuthStore((state) => state.selectedAction);
 
-  const handleActionSelect = (action: "login" | "register") => {
-    setSelectedAction(action);
-  };
 
-  const goBack = () => {
-    setSelectedAction(null);
-  };
-
-  if (!selectedAction) {
-    return <AuthSelector onActionSelect={handleActionSelect} />;
+  if (selectedAction === "register" || selectedAction === "login") {
+    return <AuthForms />;
   }
-  if (selectedAction === "register") {
-    return <RegistrationForm onBack={goBack} />;
-  }
-  if (selectedAction === "login") {
-    return <LoginForm onBack={goBack} />;
+
+    if (!selectedAction) {
+    return <AuthSelector />;
   }
 };

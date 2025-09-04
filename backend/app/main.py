@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="SME Invoicing API")
+app = FastAPI(title="SME Invoicing API",root_path="/invoices-app")
 origins = [
     "http://localhost:5173",  # Vite/React dev server
     "http://127.0.0.1:5173",

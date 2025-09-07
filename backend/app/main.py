@@ -11,7 +11,7 @@ origins = [
     "http://localhost:5173",  # Vite/React dev server
     "http://127.0.0.1:5173",
     "http://localhost:3000",  # Next.js or CRA dev server
-    "https://your-production-frontend.com"
+    "https://smeazy-invoices.vercel.app"
 ]
 app.add_middleware(
     CORSMiddleware,

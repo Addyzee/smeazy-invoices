@@ -13,17 +13,19 @@ import {
   MoreVertical,
   Copy,
 } from "lucide-react";
-import type { InvoiceType } from "../types";
+import type { InvoiceType, InvoiceWithType } from "../types";
 import { useInvoiceStore } from "../store";
 import { formatDate } from "../utils";
 import { useClearAccessAndLogout } from "../../../hooks/useLogout";
 import { InvoicesStats } from "./InvoiceStats";
-import { useGetUserBusinessInvoices } from "../hooks/useAPIs";
+import { useGetAllUserInvoices } from "../hooks/useAPIs";
 import { StatusBadge } from "../ui/components";
+import { useDistinguishInvoiceType } from "../hooks/useData";
 
 // Main Invoice Grid Component
 const InvoicesPage = () => {
-  const { data: invoices = [] } = useGetUserBusinessInvoices();
+  const { data } = useGetAllUserInvoices();
+  const invoices = useDistinguishInvoiceType(data || []);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "amount" | "status">("date");
@@ -208,11 +210,12 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
 };
 
 interface InvoicesGridProps {
-  invoices: InvoiceType[];
+  invoices: InvoiceWithType[];
 }
 const InvoicesGrid: React.FC<InvoicesGridProps> = ({ invoices }) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
   const setCurrentInvoice = useInvoiceStore((state) => state.setCurrentInvoice);
+
   const viewInvoice = (invoice: InvoiceType) => {
     setCurrentInvoice(invoice);
     setPopUpType("view");
@@ -246,26 +249,34 @@ const InvoicesGrid: React.FC<InvoicesGridProps> = ({ invoices }) => {
 };
 
 interface InvoiceCardProps {
-  invoice: InvoiceType;
+  invoice: InvoiceWithType;
   onView: () => void;
-  onEdit: () => void;
+  onEdit?: () => void | undefined;
   onDownload: () => void;
-  onSend: () => void;
+  onSend?: () => void | undefined;
   onDuplicate: () => void;
 }
 
 const InvoiceCard: React.FC<InvoiceCardProps> = ({
   invoice,
   onView,
-  onEdit,
+  onEdit = undefined,
   onDownload,
-  onSend,
+  onSend = undefined,
   onDuplicate,
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const { editFunc, sendFunc } =
+    invoice.type === "business"
+      ? { editFunc: onEdit, sendFunc: onSend }
+      : { editFunc: undefined, sendFunc: undefined };
 
   return (
-    <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300">
+    <div
+      className={`group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300 ${
+        invoice.type === "personal" ? "bg-white/90 border-primary" : ""
+      }`}
+    >
       {/* Card Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
@@ -290,49 +301,14 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
               </button>
 
               {showActions && (
-                <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-[150px]">
-                  <ActionMenuItem
-                    icon={Eye}
-                    label="View"
-                    onClick={() => {
-                      onView();
-                      setShowActions(false);
-                    }}
-                  />
-                  <ActionMenuItem
-                    icon={Edit}
-                    label="Edit"
-                    onClick={() => {
-                      onEdit();
-                      setShowActions(false);
-                    }}
-                  />
-                  <ActionMenuItem
-                    icon={Download}
-                    label="Download"
-                    onClick={() => {
-                      onDownload();
-                      setShowActions(false);
-                    }}
-                  />
-                  <ActionMenuItem
-                    icon={Send}
-                    label="Send"
-                    onClick={() => {
-                      onSend();
-                      setShowActions(false);
-                    }}
-                  />
-                  <ActionMenuItem
-                    icon={Copy}
-                    label="Duplicate"
-                    onClick={() => {
-                      onDuplicate();
-                      setShowActions(false);
-                    }}
-                  />
-                  <div className="border-t border-gray-100 my-1"></div>
-                </div>
+                <ActionMenu
+                  onView={onView}
+                  onEdit={editFunc}
+                  onDownload={onDownload}
+                  onSend={sendFunc}
+                  onDuplicate={onDuplicate}
+                  setShowActions={setShowActions}
+                />
               )}
             </div>
           </div>
@@ -397,13 +373,16 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
             <Eye className="w-4 h-4" />
             <span>View</span>
           </button>
-          <button
-            onClick={onEdit}
-            className="flex-1 py-2 px-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 text-sm"
-          >
-            <Edit className="w-4 h-4" />
-            <span>Edit</span>
-          </button>
+
+          {editFunc && (
+            <button
+              onClick={onEdit}
+              className="flex-1 py-2 px-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-md transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <Edit className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -414,6 +393,74 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
           onClick={() => setShowActions(false)}
         />
       )}
+    </div>
+  );
+};
+
+interface ActionMenuProps {
+  onView: () => void;
+  onEdit?: (() => void) | undefined;
+  onDownload: () => void;
+  onSend?: (() => void) | undefined;
+  onDuplicate: () => void;
+  setShowActions: (show: boolean) => void;
+}
+
+const ActionMenu: React.FC<ActionMenuProps> = ({
+  onView,
+  onEdit = undefined,
+  onDownload,
+  onSend = undefined,
+  onDuplicate,
+  setShowActions,
+}) => {
+  return (
+    <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10 min-w-[150px]">
+      <ActionMenuItem
+        icon={Eye}
+        label="View"
+        onClick={() => {
+          onView();
+          setShowActions(false);
+        }}
+      />
+      {onEdit && (
+        <ActionMenuItem
+          icon={Edit}
+          label="Edit"
+          onClick={() => {
+            onEdit();
+            setShowActions(false);
+          }}
+        />
+      )}
+      <ActionMenuItem
+        icon={Download}
+        label="Download"
+        onClick={() => {
+          onDownload();
+          setShowActions(false);
+        }}
+      />
+      {onSend && (
+        <ActionMenuItem
+          icon={Send}
+          label="Send"
+          onClick={() => {
+            onSend();
+            setShowActions(false);
+          }}
+        />
+      )}
+      <ActionMenuItem
+        icon={Copy}
+        label="Duplicate"
+        onClick={() => {
+          onDuplicate();
+          setShowActions(false);
+        }}
+      />
+      <div className="border-t border-gray-100 my-1"></div>
     </div>
   );
 };

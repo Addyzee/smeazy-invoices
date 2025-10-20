@@ -35,7 +35,6 @@ class UserStats(Base):
     user = relationship("User", back_populates="user_stats")
     
 class InvoiceStatus(enum.Enum):
-    draft = "draft"
     sent = "sent"
     paid = "paid"
     overdue = "overdue"
@@ -53,7 +52,7 @@ class Invoice(Base):
     total_amount = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
     due_date = Column(DateTime, nullable=False)
-    status = Column(Enum(InvoiceStatus), default=InvoiceStatus.draft, nullable=False)
+    status = Column(Enum(InvoiceStatus), default=InvoiceStatus.sent, nullable=False)
     notes = Column(String, default="")
 
     # relationships

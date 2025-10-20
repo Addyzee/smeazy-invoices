@@ -1,6 +1,32 @@
 import { authFetch } from "../../api";
 import type { InvoiceCreate, InvoiceDelete, InvoiceType, InvoiceUpdate } from "./types";
 
+
+export const getAllUserInvoicesAPI = async (
+  username: string
+): Promise<InvoiceType[]> => {
+  const url = `/invoices/user/${username}`;
+  try {
+    const response = await authFetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`Unknown error: ${String(error)}`);
+  }
+};
+
 export const getUserBusinessInvoicesAPI = async (
   username: string
 ): Promise<InvoiceType[]> => {
@@ -25,6 +51,33 @@ export const getUserBusinessInvoicesAPI = async (
     throw new Error(`Unknown error: ${String(error)}`);
   }
 };
+
+
+export const getUserCustomerInvoicesAPI = async (
+  username: string
+): Promise<InvoiceType[]> => {
+  const url = `/invoices/customer/${username}`;
+  try {
+    const response = await authFetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`Unknown error: ${String(error)}`);
+  }
+};
+
 
 export const createInvoiceAPI = async (
   invoice: InvoiceCreate

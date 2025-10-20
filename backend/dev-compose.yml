@@ -1,0 +1,47 @@
+services:
+  invoices-web:
+    build: .
+    command: bash -c 'while !</dev/tcp/smeazy-invoices-db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0'
+
+    image: smeazy-invoices:latest
+    container_name: smeazy-invoices
+    ports:
+      - "8000:8000"
+    depends_on:
+      invoices-db:
+        condition: service_healthy
+    env_file: ".env"
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    networks:
+      - smeazy-network
+
+  invoices-db:
+    image: postgres:17
+    container_name: smeazy-invoices-db
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 5s
+      retries: 5
+    networks:
+      - smeazy-network
+
+
+
+volumes:
+  postgres_data:
+
+networks:
+  smeazy-network:
+    driver: bridge

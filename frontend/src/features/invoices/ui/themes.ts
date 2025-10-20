@@ -23,6 +23,17 @@ export const statusThemes = {
     border: "border-blue-300",
     icon: Send,
   },
+  received: {
+    label: "Received",
+    color:
+      "bg-gradient-to-r from-teal-100 to-teal-200 text-teal-800 border-teal-300",
+    primary: "from-teal-500 to-teal-600",
+    secondary: "from-teal-100 to-teal-200",
+    accent: "from-teal-50 to-teal-100",
+    text: "text-teal-800",
+    border: "border-teal-300",
+    icon: CheckCircle,
+  },
   paid: {
     label: "Paid",
     color:

@@ -1,19 +1,34 @@
-import { ArrowLeft, Banknote, CheckCircle, Eye, EyeOff, Hash, Lock, Package, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Banknote,
+  Eye,
+  EyeOff,
+  Hash,
+  Lock,
+  Package,
+  Trash2,
+} from "lucide-react";
 import React, { type PropsWithChildren } from "react";
-import type { InvoiceFieldConfig, LineItem, LineItemBase } from "../features/invoices/types";
+import type {
+  InvoiceFieldConfig,
+  LineItem,
+  LineItemBase,
+} from "../features/invoices/types";
 import { StatusSelect } from "../features/invoices/ui/components";
+import { CancelButton, SubmitButton } from "./Buttons";
 
 type FormCardPropsWithChildren = PropsWithChildren & {
-  title?: string
-  subtitle?: string
-  icon: React.ComponentType<{ className?: string }>
-  showBackButton?: boolean
-  onBack?: () => void
-  onSubmit: () => void
-  submitButtonText?: string
-  cancelButtonText?: string
-  maxWidth?: string
-}
+  title?: string;
+  subtitle?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  onSubmit: () => void;
+  submitButtonText?: string;
+  cancelButtonText?: string;
+  otherFormButton?: React.ReactNode;
+  maxWidth?: string;
+};
 
 export const FormCard = ({
   title,
@@ -24,13 +39,14 @@ export const FormCard = ({
   onSubmit,
   submitButtonText = "Submit",
   cancelButtonText = "Cancel",
+  otherFormButton = null,
   maxWidth = "max-w-md",
-  children
+  children,
 }: FormCardPropsWithChildren) => {
   return (
     <div className={`w-full ${maxWidth} mx-auto`}>
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        <FormCardHeader 
+        <FormCardHeader
           icon={icon}
           title={title}
           subtitle={subtitle}
@@ -44,53 +60,43 @@ export const FormCard = ({
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 Form Title
               </h2>
-              <p className="text-gray-600 text-sm sm:text-base">Fill in the details below</p>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Fill in the details below
+              </p>
             </div>
           )}
-          
+
           <div className="space-y-6 sm:space-y-8">
             {children}
-            
+
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               {onBack && (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="w-full sm:w-auto sm:px-8 py-3 px-4 rounded-xl border-2 border-gray-200 text-gray-700 font-semibold hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 text-sm sm:text-base"
-                >
-                  {cancelButtonText}
-                </button>
+                <CancelButton onClick={onBack} buttonText={cancelButtonText} />
               )}
-              <button
-                type="button"
-                onClick={onSubmit}
-                className="w-full sm:flex-auto py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
-              >
-                <span>{submitButtonText}</span>
-                <CheckCircle className="w-4 h-4" />
-              </button>
+              {otherFormButton}
+              <SubmitButton onClick={onSubmit} buttonText={submitButtonText} />
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface FormCardHeaderProps {
-  icon: React.ComponentType<{ className?: string }>
-  title?: string
-  subtitle?: string
-  showBackButton?: boolean
-  onBack?: () => void
+  icon: React.ComponentType<{ className?: string }>;
+  title?: string;
+  subtitle?: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
 }
 
-const FormCardHeader: React.FC<FormCardHeaderProps> = ({ 
-  icon: Icon, 
-  title, 
-  subtitle, 
-  showBackButton, 
-  onBack 
+const FormCardHeader: React.FC<FormCardHeaderProps> = ({
+  icon: Icon,
+  title,
+  subtitle,
+  showBackButton,
+  onBack,
 }) => {
   return (
     <div className="h-28 sm:h-32 bg-gradient-to-r from-secondary to-accent relative">
@@ -105,12 +111,14 @@ const FormCardHeader: React.FC<FormCardHeaderProps> = ({
           </div>
           {(title || subtitle) && (
             <div>
-              {title && <h1 className="text-lg sm:text-xl font-bold">{title}</h1>}
+              {title && (
+                <h1 className="text-lg sm:text-xl font-bold">{title}</h1>
+              )}
               {subtitle && <p className="text-white/80 text-sm">{subtitle}</p>}
             </div>
           )}
         </div>
-        
+
         {showBackButton && onBack && (
           <button
             onClick={onBack}
@@ -121,13 +129,13 @@ const FormCardHeader: React.FC<FormCardHeaderProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export const EditableInputField = ({ 
-  config, 
-  ...props 
-}: { 
+export const EditableInputField = ({
+  config,
+  ...props
+}: {
   config: InvoiceFieldConfig;
   label: string;
   type: string;
@@ -145,24 +153,21 @@ export const EditableInputField = ({
         </label>
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <props.icon className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-600">{props.value || "Not specified"}</span>
+          <span className="text-gray-600">
+            {props.value || "Not specified"}
+          </span>
         </div>
       </div>
     );
   }
 
-  return (
-    <InputField
-      {...props}
-      required={config.required}
-    />
-  );
+  return <InputField {...props} required={config.required} />;
 };
 
-export const EditableTextAreaField = ({ 
-  config, 
-  ...props 
-}: { 
+export const EditableTextAreaField = ({
+  config,
+  ...props
+}: {
   config: InvoiceFieldConfig;
   label: string;
   value: string;
@@ -179,21 +184,21 @@ export const EditableTextAreaField = ({
         </label>
         <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 min-h-[80px]">
           <props.icon className="w-4 h-4 text-gray-400 mt-1" />
-          <span className="text-gray-600">{props.value || "No notes added"}</span>
+          <span className="text-gray-600">
+            {props.value || "No notes added"}
+          </span>
         </div>
       </div>
     );
   }
 
-  return (
-    <TextAreaField {...props} />
-  );
+  return <TextAreaField {...props} />;
 };
 
-export const EditableStatusSelect = ({ 
-  config, 
-  ...props 
-}: { 
+export const EditableStatusSelect = ({
+  config,
+  ...props
+}: {
   config: InvoiceFieldConfig;
   label: string;
   value: string;
@@ -207,39 +212,44 @@ export const EditableStatusSelect = ({
           {props.label}
         </label>
         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className={`w-3 h-3 rounded-full ${
-            props.value === 'paid' ? 'bg-green-500' :
-            props.value === 'sent' ? 'bg-blue-500' :
-            props.value === 'overdue' ? 'bg-red-500' :
-            props.value === 'cancelled' ? 'bg-gray-500' :
-            'bg-yellow-500'
-          }`} />
+          <div
+            className={`w-3 h-3 rounded-full ${
+              props.value === "paid"
+                ? "bg-green-500"
+                : props.value === "sent"
+                ? "bg-blue-500"
+                : props.value === "overdue"
+                ? "bg-red-500"
+                : props.value === "cancelled"
+                ? "bg-gray-500"
+                : "bg-yellow-500"
+            }`}
+          />
           <span className="text-gray-600 capitalize">{props.value}</span>
         </div>
       </div>
     );
   }
 
-  return (
-    <StatusSelect
-      {...props}
-      required={config.required}
-    />
-  );
+  return <StatusSelect {...props} required={config.required} />;
 };
 
 // Enhanced LineItemRow component
-export const EditableLineItemRow = ({ 
-  item, 
-  index, 
-  onItemChange, 
-  onRemove, 
+export const EditableLineItemRow = ({
+  item,
+  index,
+  onItemChange,
+  onRemove,
   canRemove,
-  editable 
+  editable,
 }: {
   item: LineItemBase;
   index: number;
-  onItemChange: (index: number, field: keyof LineItem, value: string | number) => void;
+  onItemChange: (
+    index: number,
+    field: keyof LineItem,
+    value: string | number
+  ) => void;
   onRemove: (index: number) => void;
   canRemove: boolean;
   editable: boolean;
@@ -251,11 +261,15 @@ export const EditableLineItemRow = ({
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div>
             <p className="text-xs text-gray-500">Product</p>
-            <p className="text-sm font-medium text-gray-700">{item.product_name || "Unnamed item"}</p>
+            <p className="text-sm font-medium text-gray-700">
+              {item.product_name || "Unnamed item"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Unit Price</p>
-            <p className="text-sm font-medium text-gray-700">KES {item.unit_price.toLocaleString()}</p>
+            <p className="text-sm font-medium text-gray-700">
+              KES {item.unit_price.toLocaleString()}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Quantity</p>
@@ -263,7 +277,9 @@ export const EditableLineItemRow = ({
           </div>
           <div>
             <p className="text-xs text-gray-500">Total</p>
-            <p className="text-sm font-bold text-gray-900">KES {(item.unit_price * item.quantity).toLocaleString()}</p>
+            <p className="text-sm font-bold text-gray-900">
+              KES {(item.unit_price * item.quantity).toLocaleString()}
+            </p>
           </div>
         </div>
       </div>
@@ -374,8 +390,6 @@ const LineItemRow: React.FC<LineItemRowProps> = ({
   );
 };
 
-
-
 interface InputFieldProps {
   label: string;
   type: string;
@@ -475,27 +489,37 @@ export const TextAreaField: React.FC<{
   icon?: React.ComponentType<{ className?: string }>;
   required?: boolean;
   rows?: number;
-}> = ({ label, value, onChange, placeholder, icon: Icon, required, rows = 4 }) => {
+}> = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  icon: Icon,
+  required,
+  rows = 4,
+}) => {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-semibold text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
-      
+
       <div className="relative">
         {Icon && (
           <div className="absolute left-3 top-3 z-10">
             <Icon className="w-4 h-4 text-gray-400" />
           </div>
         )}
-        
+
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={rows}
-          className={`w-full ${Icon ? 'pl-11' : 'pl-4'} pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none`}
+          className={`w-full ${
+            Icon ? "pl-11" : "pl-4"
+          } pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none`}
           required={required}
         />
       </div>

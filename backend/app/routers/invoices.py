@@ -94,6 +94,13 @@ def delete_invoice(
     deleted_invoice = crud.delete_invoice(db, invoice=existing_invoice)
     return deleted_invoice
 
+
+@router.get("/user/{username}", response_model=List[schemas.InvoiceOut])
+def get_user_invoices(username: str, current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
+    if username != current_user.username:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    return crud.get_all_user_invoices(db, username=username)
+
 @router.get("/business/{username}", response_model=List[schemas.InvoiceOut])
 def get_business_invoices(username: str, current_user: User = Depends(get_current_active_user), db: Session = Depends(database.get_db)):
     if username != current_user.username:

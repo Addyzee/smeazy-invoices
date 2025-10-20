@@ -17,7 +17,7 @@ export interface Customer {
 export interface InvoiceBase {
   total_amount: number;
   due_date: string;
-  status: "draft" | "sent" | "paid" | "overdue" | "cancelled";
+  status: "draft" | "sent" | "paid" | "overdue" | "cancelled" | "received";
 }
 
 export interface InvoiceDelete {
@@ -40,6 +40,10 @@ export interface InvoiceType extends InvoiceCreate {
   line_items: LineItem[];
   invoice_number: string;
   created_at: string;
+}
+
+export interface InvoiceWithType extends InvoiceType {
+  type: "personal" | "business";
 }
 
 export type InvoiceFormMode = "create" | "update" | "duplicate";

@@ -9,7 +9,7 @@ import type {
 } from "../types";
 import { useInvoiceStore } from "../store";
 import { useUserName } from "../../../hooks/useData";
-import { useCreateInvoice, useUpdateInvoice } from "./useAPIs";
+import { useCreateInvoice, useDeleteInvoice, useUpdateInvoice } from "./useAPIs";
 
 export const FORM_CONFIGS: Record<InvoiceFormMode, InvoiceFormConfig> = {
   create: {
@@ -187,6 +187,12 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
     }
     setPopUpType(null);
   };
+  const deleteInvoice = useDeleteInvoice();
+  
+  const onDelete = () => {
+    deleteInvoice.mutate();
+    setPopUpType(null);
+  };
 
   return {
     formData,
@@ -199,6 +205,7 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
     handleLineItemChange,
     handleBusinessNameChange,
     handleSubmit,
+    onDelete
   };
 };
 

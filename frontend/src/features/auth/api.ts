@@ -36,8 +36,6 @@ export const registerAPI = async (registrationData: RegistrationFormType): Promi
 
 export const loginAPI = async ({ phone_number, password }: LoginFormType):Promise<TokenType> => {
   const url = `${baseURL}/users/token`;
-  console.log("Base URL:", baseURL); // Debugging line
-  console.log("Login API URL:", url); // Debugging line
 
   try {
     const formData = new URLSearchParams();

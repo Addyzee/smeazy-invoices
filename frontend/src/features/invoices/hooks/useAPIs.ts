@@ -1,9 +1,34 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { createInvoiceAPI, deleteInvoiceAPI, getUserBusinessInvoicesAPI, updateInvoiceAPI } from "../api";
+import { createInvoiceAPI, deleteInvoiceAPI, getAllUserInvoicesAPI, getUserBusinessInvoicesAPI, getUserCustomerInvoicesAPI, updateInvoiceAPI } from "../api";
 import { useUserName } from "../../../hooks/useData";
 import type { InvoiceCreate, InvoiceUpdate } from "../types";
 import { useInvoiceStore } from "../store";
+
+
+export const useGetAllUserInvoices = () => {
+  const username = useUserName();
+
+  const query = useQuery({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      if (!username) {
+        throw new Error("Username is required");
+      }
+      const response = await getAllUserInvoicesAPI(username);
+      return response;
+    },
+    enabled: !!username,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      console.error("Error fetching invoices:", query.error);
+    }
+  }, [query.error]);
+
+  return query;
+};
 
 export const useGetUserBusinessInvoices = () => {
   const username = useUserName();
@@ -15,6 +40,30 @@ export const useGetUserBusinessInvoices = () => {
         throw new Error("Username is required");
       }
       const response = await getUserBusinessInvoicesAPI(username);
+      return response;
+    },
+    enabled: !!username,
+  });
+
+  useEffect(() => {
+    if (query.error) {
+      console.error("Error fetching invoices:", query.error);
+    }
+  }, [query.error]);
+
+  return query;
+};
+
+export const useGetUserCustomerInvoices = () => {
+  const username = useUserName();
+
+  const query = useQuery({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      if (!username) {
+        throw new Error("Username is required");
+      }
+      const response = await getUserCustomerInvoicesAPI(username);
       return response;
     },
     enabled: !!username,

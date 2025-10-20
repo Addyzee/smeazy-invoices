@@ -9,6 +9,7 @@ import {
   Calendar,
   Calendar1,
   FileText,
+  Trash,
 } from "lucide-react";
 import {
   EditableInputField,
@@ -18,10 +19,9 @@ import {
   FormCard,
   FormSection,
 } from "../../../components/FormComponents";
-import type { InvoiceFormMode,  LineItemBase } from "../types";
+import type { InvoiceFormMode, LineItemBase } from "../types";
 import { useInvoiceForm, useLineItems } from "../hooks/formHooks";
 import { useInvoiceStore } from "../store";
-
 
 export const CreateInvoiceForm = () => {
   return <FlexibleInvoiceForm mode="create" />;
@@ -33,9 +33,13 @@ export const UpdateInvoiceForm = () => {
 
 export const DuplicateInvoiceForm = () => {
   return <FlexibleInvoiceForm mode="duplicate" />;
-}
+};
 
-const FlexibleInvoiceForm = ({ mode = 'create' }: { mode?: InvoiceFormMode }) => {
+const FlexibleInvoiceForm = ({
+  mode = "create",
+}: {
+  mode?: InvoiceFormMode;
+}) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
 
   const {
@@ -49,6 +53,7 @@ const FlexibleInvoiceForm = ({ mode = 'create' }: { mode?: InvoiceFormMode }) =>
     handleStatusChange,
     handleBusinessNameChange,
     handleSubmit,
+    onDelete,
   } = useInvoiceForm(mode);
 
   const { addLineItem, removeLineItem } = useLineItems({
@@ -58,24 +63,35 @@ const FlexibleInvoiceForm = ({ mode = 'create' }: { mode?: InvoiceFormMode }) =>
   });
 
   const currentInvoice = useInvoiceStore((state) => state.currentInvoice);
-  
-  const { title, subtitle, buttonText } = mode === 'update' && currentInvoice
-    ? {
-        title: `#${currentInvoice.invoice_number}`,
-        subtitle: "Edit Invoice",
-        buttonText: "Save Changes",
-      }
-    : mode === "duplicate"
-    ? {
-        title: "Duplicate Invoice",
-        subtitle: "Create your invoice",
-        buttonText: "Create Invoice",
-      }
-    : {
-        title: "New Invoice",
-        subtitle: "Create your invoice",
-        buttonText: "Create Invoice",
-      };
+
+  const { title, subtitle, buttonText } =
+    mode === "update" && currentInvoice
+      ? {
+          title: `#${currentInvoice.invoice_number}`,
+          subtitle: "Edit Invoice",
+          buttonText: "Save Changes",
+        }
+      : mode === "duplicate"
+      ? {
+          title: "Duplicate Invoice",
+          subtitle: "Create your invoice",
+          buttonText: "Create Invoice",
+        }
+      : {
+          title: "New Invoice",
+          subtitle: "Create your invoice",
+          buttonText: "Create Invoice",
+        };
+  const deleteInvoiceButton =
+    mode === "update" ? (
+      <button
+        onClick={onDelete}
+        className={`flex-1 w-full sm:flex-auto py-3 px-6 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base`}
+      >
+        <Trash className="w-5 h-5" />
+        <span>Delete Invoice</span>
+      </button>
+    ) : null;
 
   return (
     <div className="h-full py-6 px-4 sm:px-6">
@@ -88,6 +104,7 @@ const FlexibleInvoiceForm = ({ mode = 'create' }: { mode?: InvoiceFormMode }) =>
         onSubmit={handleSubmit}
         submitButtonText={buttonText}
         cancelButtonText="Cancel"
+        otherFormButton={deleteInvoiceButton}
         maxWidth="max-w-2xl"
       >
         {/* Business Info Section */}

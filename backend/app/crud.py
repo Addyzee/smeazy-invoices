@@ -37,6 +37,14 @@ def create_user(db: Session, user: schemas.UserCreate):
 
     return db_user
 
+def get_all_user_invoices(db: Session, username: str):
+    user = get_user(db, username)
+    if not user:
+        return []
+    return db.query(models.Invoice).filter(
+        (models.Invoice.business_id == user.id) | (models.Invoice.customer_id == user.id)
+    ).all()
+
 def get_invoices_by_business(db: Session, business_id: int):
     return db.query(models.Invoice).filter(models.Invoice.business_id == business_id).all()
 

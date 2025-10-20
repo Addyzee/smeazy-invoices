@@ -1,9 +1,20 @@
-import { AlertCircle, CheckCircle, Clock, DollarSign } from "lucide-react";
-import type { InvoiceType } from "../types";
+import { AlertCircle, CheckCircle, DollarSign } from "lucide-react";
+import type { InvoiceWithType } from "../types";
 
-export const InvoicesStats: React.FC<{ invoices: InvoiceType[] }> = ({ invoices }) => {
+export const InvoicesStats: React.FC<{ invoices: InvoiceWithType[] }> = ({
+  invoices,
+}) => {
+  const businessInvoices = invoices.filter((inv) => inv.type === "business");
+  const personalInvoices = invoices.filter((inv) => inv.type === "personal");
   const stats = {
-    total: invoices.reduce((sum, inv) => sum + inv.total_amount, 0),
+    totalRevenue: businessInvoices.reduce(
+      (sum, inv) => sum + inv.total_amount,
+      0
+    ),
+    totalExpenditure: personalInvoices.reduce(
+      (sum, inv) => sum + inv.total_amount,
+      0
+    ),
     paid: invoices
       .filter((inv) => inv.status === "paid")
       .reduce((sum, inv) => sum + inv.total_amount, 0),
@@ -15,7 +26,7 @@ export const InvoicesStats: React.FC<{ invoices: InvoiceType[] }> = ({ invoices 
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <StatCard
         title="Total Revenue"
-        value={`KES ${stats.total.toLocaleString()}`}
+        value={`KES ${stats.totalRevenue.toLocaleString()}`}
         icon={DollarSign}
         color="from-primary to-secondary"
       />
@@ -26,16 +37,16 @@ export const InvoicesStats: React.FC<{ invoices: InvoiceType[] }> = ({ invoices 
         color="from-green-500 to-emerald-500"
       />
       <StatCard
-        title="Pending"
-        value={stats.pending.toString()}
-        icon={Clock}
-        color="from-yellow-500 to-orange-500"
-      />
-      <StatCard
         title="Overdue"
         value={stats.overdue.toString()}
         icon={AlertCircle}
         color="from-red-500 to-pink-500"
+      />
+      <StatCard
+        title="Total Expenditure"
+        value={`KES ${stats.totalExpenditure.toLocaleString()}`}
+        icon={DollarSign}
+        color="from-primary to-secondary"
       />
     </div>
   );

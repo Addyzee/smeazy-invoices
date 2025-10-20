@@ -42,4 +42,4 @@ volumes:
 
 networks:
   smeazy-network:
-    driver: bridge
+    external: true

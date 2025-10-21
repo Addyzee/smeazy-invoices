@@ -23,6 +23,8 @@ import { StatusBadge } from "../ui/components";
 import { useDistinguishInvoiceType } from "../hooks/useData";
 import { useUserDetailsStore } from "../../../store";
 import { useClearGuestData } from "../hooks/useAPIs";
+import { handleDownload } from "../utils/handleDownload";
+
 
 // Main Invoice Grid Component
 const InvoicesPage = () => {
@@ -135,7 +137,7 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
 }) => {
   const useGuestAccount = useUserDetailsStore((store) => store.useGuestAccount);
   const { clearAccessAndLogout } = useClearAccessAndLogout();
-  const clearGuestData  = useClearGuestData();
+  const clearGuestData = useClearGuestData();
   return (
     <div className="mb-8">
       {/* Title and Create Button */}
@@ -157,12 +159,12 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
               <span>Clear Data</span>
             </button>
           )}
-            <button
-              onClick={clearAccessAndLogout}
-              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
-            >
-              <span>Logout</span>
-            </button>
+          <button
+            onClick={clearAccessAndLogout}
+            className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+          >
+            <span>Logout</span>
+          </button>
 
           <CreateInvoiceButton />
         </div>
@@ -243,6 +245,12 @@ const InvoicesGrid: React.FC<InvoicesGridProps> = ({ invoices }) => {
     setPopUpType("duplicate");
   };
 
+  
+
+  const onDownload = (invoice: InvoiceType) => {
+    handleDownload(invoice);
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {invoices.map((invoice) => (
@@ -251,9 +259,7 @@ const InvoicesGrid: React.FC<InvoicesGridProps> = ({ invoices }) => {
           invoice={invoice}
           onView={() => viewInvoice(invoice)}
           onEdit={() => onEdit(invoice)}
-          onDownload={() =>
-            console.log("Download invoice:", invoice.invoice_number)
-          }
+          onDownload={() => onDownload(invoice)}
           onSend={() => console.log("Send invoice:", invoice.invoice_number)}
           onDuplicate={() => onDuplicate(invoice)}
         />

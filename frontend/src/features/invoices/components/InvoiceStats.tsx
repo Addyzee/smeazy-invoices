@@ -19,7 +19,7 @@ export const InvoicesStats: React.FC<{ invoices: InvoiceWithType[] }> = ({
       .filter((inv) => inv.status === "paid")
       .reduce((sum, inv) => sum + inv.total_amount, 0),
     pending: invoices.filter((inv) => inv.status === "sent").length,
-    overdue: invoices.filter((inv) => inv.status === "overdue").length,
+    overdue: invoices.filter((inv) => new Date(inv.due_date) < new Date()).length,
   };
 
   return (

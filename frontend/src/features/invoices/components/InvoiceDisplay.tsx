@@ -23,6 +23,8 @@ import type { InvoiceType } from "../types";
 import { usePhoneNumber } from "../../../hooks/useData";
 import { DeleteButton, GenericButton } from "../../../components/Buttons";
 import FormattedNumber from "../ui/components";
+import Markdown from "react-markdown";
+import { handleDownload } from "../utils/handleDownload";
 
 interface InvoiceDisplayProps {
   onDownload?: () => void;
@@ -145,11 +147,8 @@ const LineItemCard: React.FC<{
       </div>
       <div>
         {item.description && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h5 className="text-sm font-medium text-gray-700 mb-2">
-              Description
-            </h5>
-            <p className="text-sm text-gray-900">{item.description}</p>
+          <div className="prose prose-sm max-w-none p-4 border border-gray-200 rounded-lg bg-gray-50 mt-2">
+            <Markdown>{item.description}</Markdown>
           </div>
         )}
       </div>
@@ -157,10 +156,7 @@ const LineItemCard: React.FC<{
   );
 };
 
-export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
-  onDownload,
-  onSend,
-}) => {
+export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({ onSend }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const invoice = useInvoiceStore(
     (state) => state.currentInvoice
@@ -178,14 +174,18 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
   };
 
   const onEdit =
-    invoice.customer &&
+    invoice.customer ?
     invoice.customer.phone_number &&
     invoice.customer?.phone_number != phoneNumber
       ? () => setPopUpType("update")
-      : null;
+      : null
+    : () => setPopUpType("update");
   const onDelete = () => {
     deleteInvoice.mutate();
     setPopUpType(null);
+  };
+  const onDownload = () => {
+    handleDownload(invoice);
   };
 
   // Handle scroll for sticky header effect
@@ -389,7 +389,13 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
                     <span className={`font-bold ${theme.text}`}>
                       KES{" "}
                       <FormattedNumber
-                        value={invoice.total_amount / invoice.line_items.reduce((acc, item) => acc + item.quantity, 0)}
+                        value={
+                          invoice.total_amount /
+                          invoice.line_items.reduce(
+                            (acc, item) => acc + item.quantity,
+                            0
+                          )
+                        }
                       />
                     </span>
                   </div>
@@ -489,7 +495,7 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
               <GenericButton
                 onClick={onBack}
                 buttonText="Back to Invoices"
-                className="py-4 px-8 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-2xl text-gray-700 font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl border border-white/30"
+                className="py-4 px-8 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-2xl text-gray-700 font-semibold transition-all duration-200 flex items-center justify-center gap-3 hover:cursor-pointer shadow-lg hover:shadow-xl border border-white/30"
                 Icon={ArrowLeft}
               />
 
@@ -499,6 +505,14 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
                   buttonText="Edit Invoice"
                   className={`py-4 px-8 bg-gradient-to-r ${theme.primary} text-white rounded-2xl font-semibold hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 shadow-lg`}
                   Icon={Edit}
+                />
+              )}
+              {onDownload && (
+                <GenericButton
+                  onClick={onDownload}
+                  buttonText="Download Invoice"
+                  className="py-4 px-8 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-2xl text-gray-700 font-semibold transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:cursor-pointer hover:shadow-xl border border-white/30"
+                  Icon={Download}
                 />
               )}
               {invoice.status === "cancelled" && (

@@ -1,7 +1,7 @@
 import {
   Receipt,
-  User,
   Phone,
+  Building,
   Building2,
   Plus,
   Package,
@@ -22,6 +22,7 @@ import {
 import type { InvoiceFormMode, LineItemBase } from "../types";
 import { useInvoiceForm, useLineItems } from "../hooks/formHooks";
 import { useInvoiceStore } from "../store";
+import { useState } from "react";
 
 export const CreateInvoiceForm = () => {
   return <FlexibleInvoiceForm mode="create" />;
@@ -41,6 +42,7 @@ const FlexibleInvoiceForm = ({
   mode?: InvoiceFormMode;
 }) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     formData,
@@ -54,7 +56,7 @@ const FlexibleInvoiceForm = ({
     handleBusinessNameChange,
     handleSubmit,
     onDelete,
-  } = useInvoiceForm(mode);
+  } = useInvoiceForm({ mode, setError });
 
   const { addLineItem, removeLineItem } = useLineItems({
     lineItems: formData.line_items,
@@ -79,7 +81,7 @@ const FlexibleInvoiceForm = ({
         }
       : {
           title: "New Invoice",
-          subtitle: "Create your invoice",
+          subtitle: "Create invoice",
           buttonText: "Create Invoice",
         };
   const deleteInvoiceButton =
@@ -108,10 +110,10 @@ const FlexibleInvoiceForm = ({
         maxWidth="max-w-2xl"
       >
         {/* Business Info Section */}
-        <FormSection title="Business Information" icon={Building2}>
+        <FormSection title="Invoice From" icon={Building}>
           <EditableInputField
             config={config.fields.business_name}
-            label="Business Name"
+            label="Business Name / Your Name"
             type="text"
             value={formData.business_name}
             onChange={handleBusinessNameChange}
@@ -121,25 +123,26 @@ const FlexibleInvoiceForm = ({
         </FormSection>
 
         {/* Customer Info Section */}
-        <FormSection title="Customer Information" icon={User}>
+        <FormSection title="Invoice To" icon={Building2}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <EditableInputField
-              config={config.fields.customer.full_name}
-              label="Full Name"
+              config={config.fields.customer.full_name }
+              label="Business Name / Customer Name"
               type="text"
-              value={formData.customer.full_name}
+              value={formData.customer_name || ""}
               onChange={(value) => handleCustomerChange("full_name", value)}
-              placeholder="Customer's full name"
-              icon={User}
+              placeholder="Business / Customer's Name"
+              icon={Building2}
             />
             <EditableInputField
               config={config.fields.customer.phone_number}
               label="Phone Number"
               type="tel"
-              value={formData.customer.phone_number}
+              value={formData.customer_phone || ""}
               onChange={(value) => handleCustomerChange("phone_number", value)}
               placeholder="Customer's phone"
               icon={Phone}
+              required={false}
             />
           </div>
         </FormSection>
@@ -222,6 +225,9 @@ const FlexibleInvoiceForm = ({
             </div>
           </div>
         </div>
+        {error && (
+          <p className="text-red-600 font-medium mt-4 text-center">{error}</p>
+        )}
       </FormCard>
     </div>
   );

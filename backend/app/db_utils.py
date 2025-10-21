@@ -1,4 +1,4 @@
-from app.utils import slugify_name
+from .utils import slugify_name
 from sqlalchemy.orm import Session
 from . import models
 

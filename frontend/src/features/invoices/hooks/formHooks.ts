@@ -18,8 +18,10 @@ export const FORM_CONFIGS: Record<InvoiceFormMode, InvoiceFormConfig> = {
       business_name: { editable: true, required: true },
       customer: {
         full_name: { editable: true, required: true },
-        phone_number: { editable: true, required: true },
+        phone_number: { editable: true, required: false },
       },
+      customer_name: { editable: true, required: true },
+      customer_phone: { editable: true, required: false },
       line_items: { editable: true, required: true },
       due_date: { editable: true, required: true },
       status: { editable: true, required: true },
@@ -32,8 +34,10 @@ export const FORM_CONFIGS: Record<InvoiceFormMode, InvoiceFormConfig> = {
       business_name: { editable: true, required: true },
       customer: {
         full_name: { editable: true, required: true },
-        phone_number: { editable: true, required: true },
+        phone_number: { editable: true, required: false },
       },
+      customer_name: { editable: true, required: true },
+      customer_phone: { editable: true, required: false },
       line_items: { editable: true, required: true },
       due_date: { editable: true, required: true },
       status: { editable: true, required: true },
@@ -48,6 +52,8 @@ export const FORM_CONFIGS: Record<InvoiceFormMode, InvoiceFormConfig> = {
         full_name: { editable: false },
         phone_number: { editable: false },
       },
+      customer_name: { editable: false },
+      customer_phone: { editable: false },
       line_items: { editable: true, required: true },
       due_date: { editable: true, required: true },
       status: { editable: true, required: true },
@@ -56,7 +62,12 @@ export const FORM_CONFIGS: Record<InvoiceFormMode, InvoiceFormConfig> = {
   },
 };
 
-export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
+interface UseInvoiceFormProps {
+  mode: InvoiceFormMode;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export const useInvoiceForm = ({ mode = "create", setError }: UseInvoiceFormProps) => {
   const currentInvoice = useInvoiceStore((state) => state.currentInvoice);
   const setCurrentInvoice = useInvoiceStore((state) => state.setCurrentInvoice);
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
@@ -78,11 +89,15 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
             phone_number: "",
             full_name: "",
           },
+          customer_name: "",
+          customer_phone: null,
           line_items: [
             {
               product_name: "",
               unit_price: 0,
               quantity: 1,
+              type: "product",
+              description: "",
             },
           ],
         }
@@ -100,14 +115,28 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
 
   const handleCustomerChange = (field: keyof Customer, value: string) => {
     if (!config.fields.customer[field].editable) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      customer: {
-        ...prev.customer,
-        [field]: value,
-      },
-    }));
+    if (field === "full_name" && config.fields.customer_name.editable) {
+      setFormData((prev) => ({
+        ...prev,
+        customer: {
+          ...prev.customer,
+          [field]: value,
+        },
+        customer_name: value,
+      }));
+      return
+    }
+    if (field === "phone_number" && config.fields.customer_phone.editable) {
+      setFormData((prev) => ({
+        ...prev,
+        customer: {
+          ...prev.customer,
+          [field]: value,
+        },
+        customer_phone: value,
+      }));
+      return;
+    }
   };
 
   const handleDueDateChange = (value: string) => {
@@ -164,7 +193,12 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
   };
 
   const handleSubmit = () => {
+    if (formData.line_items[formData.line_items.length - 1].product_name.trim() === "") {
+      setError("Please fill out all line items or remove empty ones.");
+      return;
+    }
     if (mode === "create") {
+      console.log("Creating invoice with data:", formData);
       createInvoice.mutate(formData);
       setCurrentInvoice(null);
     } else if ( mode === "duplicate"){
@@ -183,6 +217,7 @@ export const useInvoiceForm = (mode: InvoiceFormMode = "create") => {
         line_items: formData.line_items,
         notes: formData.notes,
       };
+      console.log("Updating invoice with data:", updateData);
       updateInvoice.mutate(updateData);
     }
     setPopUpType(null);
@@ -219,12 +254,14 @@ export const useLineItems = ({
   setLineItems,
 }: UseLineItemsProps) => {
   const addLineItem = () => {
+    if (lineItems[lineItems.length - 1].product_name.trim() === "") return;
     setLineItems([
       ...lineItems,
       {
         product_name: "",
         unit_price: 0,
         quantity: 1,
+        type: "product",
       },
     ]);
   };

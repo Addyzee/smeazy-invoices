@@ -1,10 +1,11 @@
-import { ArrowRight, User } from "lucide-react";
+import { ArrowRight, User, ScrollText } from "lucide-react";
 import { useAuthStore } from "../store";
-
-
+import { statusThemes } from "../../invoices/ui/themes";
+import { useProceedWithGuestAccount } from "../hooks/useAPIs";
 
 export const AuthSelector: React.FC = () => {
   const setSelectedAction = useAuthStore((state) => state.setSelectedAction);
+  const proceedWithGuestAccount = useProceedWithGuestAccount();
   return (
     <div className="h-full w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
       <div className="text-center w-full">
@@ -21,16 +22,29 @@ export const AuthSelector: React.FC = () => {
             subtitle="Simple invoices"
             description="Create and receive invoices"
             icon={User}
+            buttonText="Create Account"
             onClick={() => setSelectedAction("register")}
           />
+          <ActionCard
+            title="Quick Invoices"
+            subtitle="No account needed"
+            description="Create and download invoices"
+            icon={ScrollText}
+            buttonText="Proceed without Account"
+            theme="received"
+            onClick={proceedWithGuestAccount}
+          />
         </div>
-        <p className="mt-5">Already have an account?</p>
-        <button
-          className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200"
-          onClick={() => setSelectedAction("login")}
-        >
-          Login
-        </button>
+        <div>
+          <p className="mt-5">Already have an account?</p>
+          <button
+            className={`flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200`}
+            onClick={() => setSelectedAction("login")}
+          >
+            Login
+          </button>
+        </div>
+
       </div>
     </div>
   );
@@ -40,16 +54,20 @@ interface ActionCardProps {
   title: string;
   subtitle: string;
   description: string;
+  buttonText: string;
   icon: React.ComponentType<{ className?: string }>;
   onClick: () => void;
+  theme?: keyof typeof statusThemes;
 }
 
 const ActionCard: React.FC<ActionCardProps> = ({
   title,
   subtitle,
   description,
+  buttonText,
   icon: Icon,
   onClick,
+  theme,
 }) => {
   return (
     <div
@@ -58,7 +76,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
     >
       <div className="w-full h-72 sm:h-80 bg-white rounded-2xl shadow-xl border border-gray-100 group-hover:shadow-2xl transition-all duration-300 overflow-hidden">
         <div
-          className={`h-20 sm:h-24 bg-gradient-to-r from-secondary to-accent relative`}
+          className={`h-20 sm:h-24 bg-gradient-to-r ${theme ? statusThemes[theme].primary : "from-secondary to-accent"} relative`}
         >
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="flex items-center justify-center h-full">
@@ -73,7 +91,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
             {title}
           </h3>
           <p
-            className={`text-sm font-medium mb-3 bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent`}
+            className={`text-sm font-medium mb-3 bg-gradient-to-r ${theme ? statusThemes[theme].primary : "from-secondary to-accent"} bg-clip-text text-transparent`}
           >
             {subtitle}
           </p>
@@ -82,9 +100,9 @@ const ActionCard: React.FC<ActionCardProps> = ({
           </p>
 
           <div
-            className={`w-full py-2.5 sm:py-2 px-4 rounded-lg bg-gradient-to-r from-secondary to-accent text-white font-medium text-center transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base`}
+            className={`w-full py-2.5 sm:py-2 px-4 rounded-lg bg-gradient-to-r ${theme ? statusThemes[theme].primary : "from-secondary to-accent"} text-white font-medium text-center transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base`}
           >
-            <span>Get Started</span>
+            <span>{buttonText}</span>
             <ArrowRight className="w-4 h-4" />
           </div>
         </div>

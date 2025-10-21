@@ -3,6 +3,8 @@ export interface LineItemBase {
   product_name: string;
   unit_price: number;
   quantity: number;
+  type: "product" | "service";
+  description?: string;
 }
 
 export interface LineItem extends LineItemBase {
@@ -10,7 +12,7 @@ export interface LineItem extends LineItemBase {
 }
 
 export interface Customer {
-  phone_number: string;
+  phone_number: string | null;
   full_name: string;
 }
 
@@ -34,12 +36,16 @@ export interface InvoiceCreate extends InvoiceUpdate {
   username: string;
   business_name: string;
   customer: Customer;
+  customer_name: string;
+  customer_phone?: string | null;
 }
 
 export interface InvoiceType extends InvoiceCreate {
   line_items: LineItem[];
   invoice_number: string;
   created_at: string;
+  customer_name: string;
+  customer_phone: string | null;
 }
 
 export interface InvoiceWithType extends InvoiceType {
@@ -61,6 +67,8 @@ export interface InvoiceFormConfig {
       full_name: InvoiceFieldConfig;
       phone_number: InvoiceFieldConfig;
     };
+    customer_name: InvoiceFieldConfig;
+    customer_phone: InvoiceFieldConfig;
     line_items: InvoiceFieldConfig;
     due_date: InvoiceFieldConfig;
     status: InvoiceFieldConfig;

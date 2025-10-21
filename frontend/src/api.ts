@@ -1,8 +1,15 @@
 import type { UserType } from "./features/auth/types";
+import { useUserDetailsStore } from "./store";
 
 const baseURL = import.meta.env.VITE_SERVER_URL;
 
 export const authFetch = async (url: string, options: RequestInit = {}) => {
+  const { useGuestAccount } = useUserDetailsStore.getState();
+
+  if (useGuestAccount) {
+    throw new Error("Guest users cannot access backend resources");
+  }
+
   const tryRequest = async (token: string): Promise<Response> => {
     const headers = {
       ...options.headers,
@@ -42,7 +49,7 @@ export const getUserDetailsAPI = async (): Promise<UserType> => {
     if (!response.ok) {
       throw new Error(`Server error: ${response.status}`);
     }
-    const data = await response.json()
+    const data = await response.json();
 
     return data;
   } catch (error) {
@@ -54,6 +61,12 @@ export const getUserDetailsAPI = async (): Promise<UserType> => {
 };
 
 export const logoutAPI = async () => {
+  const { useGuestAccount, setUseGuestAccount } =
+    useUserDetailsStore.getState();
+  if (useGuestAccount) {
+    setUseGuestAccount(false);
+    return;
+  }
   window.location.href = "/";
   localStorage.removeItem("access_token");
 };

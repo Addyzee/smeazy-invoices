@@ -3,17 +3,18 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { AuthPage } from "./features/auth/components/AuthPage";
 import InvoiceHome from "./features/invoices/components/Home";
+import { useUserDetailsStore } from "./store";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const accessToken = localStorage.getItem("access_token");
-  
-  if (!accessToken) {
+  const { useGuestAccount: proceededWithoutAccount } = useUserDetailsStore();
+
+  if (!accessToken && !proceededWithoutAccount) {
     return <Navigate to="/account" replace />;
   }
-  
+
   return children;
 };
-
 
 const router = createBrowserRouter([
   {
@@ -33,7 +34,6 @@ const router = createBrowserRouter([
 const queryClient = new QueryClient();
 
 function App() {
-
   return (
     <QueryClientProvider client={queryClient}>
       <div className="h-full w-full flex flex-col items-center justify-center">

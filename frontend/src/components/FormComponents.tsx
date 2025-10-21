@@ -3,6 +3,8 @@ import {
   Banknote,
   Eye,
   EyeOff,
+  FileText,
+  Hand,
   Hash,
   Lock,
   Package,
@@ -16,6 +18,7 @@ import type {
 } from "../features/invoices/types";
 import { StatusSelect } from "../features/invoices/ui/components";
 import { CancelButton, SubmitButton } from "./Buttons";
+import Markdown from "react-markdown";
 
 type FormCardPropsWithChildren = PropsWithChildren & {
   title?: string;
@@ -192,7 +195,7 @@ export const EditableTextAreaField = ({
     );
   }
 
-  return <TextAreaField {...props} />;
+  return <MDTextAreaField {...props} />;
 };
 
 export const EditableStatusSelect = ({
@@ -260,9 +263,9 @@ export const EditableLineItemRow = ({
         <Package className="w-4 h-4 text-gray-400" />
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div>
-            <p className="text-xs text-gray-500">Product</p>
+            <p className="text-xs text-gray-500">{item.type === "product" ? "Product" : "Service"}</p>
             <p className="text-sm font-medium text-gray-700">
-              {item.product_name || "Unnamed item"}
+              {item.product_name}
             </p>
           </div>
           <div>
@@ -317,12 +320,20 @@ const LineItemRow: React.FC<LineItemRowProps> = ({
   canRemove,
 }) => {
   const subtotal = item.unit_price * item.quantity;
+  const [includeDescription, setIncludeDescription] = React.useState(false);
+  const { Icon, OppositeIcon } =
+    item.type === "product"
+      ? {
+          Icon: Package,
+          OppositeIcon: Hand,
+        }
+      : { Icon: Hand, OppositeIcon: Package };
 
   return (
     <div className="bg-gray-50/50 rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="font-medium text-gray-900 flex items-center gap-2">
-          <Package className="w-4 h-4 text-primary" />
+          <Icon className="w-4 h-4 text-primary" />
           {item.product_name || `Item ${index + 1}`}
         </h4>
         {canRemove && (
@@ -334,21 +345,36 @@ const LineItemRow: React.FC<LineItemRowProps> = ({
             <Trash2 className="w-4 h-4" />
           </button>
         )}
+        <button
+          type="button"
+          onClick={() =>
+            onItemChange(
+              index,
+              "type",
+              item.type === "product" ? "service" : "product"
+            )
+          }
+        >
+          <OppositeIcon className="w-7 h-7 text-gray-400" />
+          <span className="sr-only">Toggle Item Type</span>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="sm:col-span-1">
+      <div className="sm:col-span-1">
           <InputField
-            label="Product Name"
+            label={`${item.type === "product" ? "Product" : "Service"} Name`}
             type="text"
             value={item.product_name}
             onChange={(value) => onItemChange(index, "product_name", value)}
-            placeholder="Product name"
-            icon={Package}
+            placeholder={`${
+              item.type === "product" ? "Product" : "Service"
+            } Name`}
+            icon={Icon}
             required
           />
         </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <InputField
             label="Unit Price"
@@ -377,8 +403,33 @@ const LineItemRow: React.FC<LineItemRowProps> = ({
           />
         </div>
       </div>
+      {includeDescription && (
+        <MDTextAreaField
+          label="Description"
+          value={item.description || ""}
+          onChange={(value) => onItemChange(index, "description", value)}
+          placeholder="Add a description for this item..."
+          icon={FileText}
+          rows={3}
+        />
+      )}
 
-      <div className="flex justify-end pt-2 border-t border-gray-200">
+      <div className="flex justify-between pt-2 border-t border-gray-200">
+        <div>
+          <button
+            type="button"
+            onClick={() => setIncludeDescription(!includeDescription)}
+            className="text-sm text-primary hover:underline"
+          >
+            {item.description && includeDescription || !item.description && includeDescription
+              ? "Hide Description"
+              : !item.description && !includeDescription
+              ? "Add Description"
+              : item.description && !includeDescription
+              ? "Show Description"
+              : null}  {/* :,) */}
+          </button>
+        </div>
         <div className="text-right">
           <p className="text-sm text-gray-600">Subtotal</p>
           <p className="text-lg font-semibold text-gray-900">
@@ -421,6 +472,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         <input
           type={type}
           value={value}
+          min={type === "number" ? "0" : undefined}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
@@ -522,6 +574,72 @@ export const TextAreaField: React.FC<{
           } pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none`}
           required={required}
         />
+      </div>
+    </div>
+  );
+};
+
+export const MDTextAreaField: React.FC<{
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  required?: boolean;
+  rows?: number;
+}> = ({
+  label,
+  value,
+  onChange,
+  placeholder,
+  icon: Icon,
+  required,
+  rows = 4,
+}) => {
+  const [showPreview, setShowPreview] = React.useState(false);
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-semibold text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        <button
+          type="button"
+          onClick={() => setShowPreview(!showPreview)}
+          className="text-gray-400 hover:text-gray-600 transition-colors flex items-center"
+        >
+          {showPreview ? (
+            <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+          ) : (
+            <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+          )}
+        </button>
+      </div>
+
+      <div className="relative">
+        {Icon && (
+          <div className="absolute left-3 top-3 z-10">
+            <Icon className="w-4 h-4 text-gray-400" />
+          </div>
+        )}
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows}
+          className={`w-full ${
+            Icon ? "pl-11" : "pl-4"
+          } pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none`}
+          required={required}
+        />
+        {showPreview && (
+          <div className="prose prose-sm max-w-none p-4 border border-gray-200 rounded-lg bg-gray-50 mt-2">
+            <Markdown>
+              {value || "Preview will appear here (markdown enabled)..."}
+            </Markdown>
+          </div>
+        )}
       </div>
     </div>
   );

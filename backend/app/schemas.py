@@ -12,7 +12,7 @@ class TokenData(BaseModel):
 
 class LoginRequest(BaseModel):
     phone_number: str
-    password: str  # BUSINESS or CUSTOMER
+    password: str 
 
 
 class UserBase(BaseModel):
@@ -39,6 +39,8 @@ class LineItemCreate(BaseModel):
     product_name: str
     unit_price: float
     quantity: int
+    description: Optional[str]
+    type: Optional[str]  # e.g., "service" or "product"
     
 class LineItemOut(LineItemCreate):
     transaction_value: float
@@ -53,9 +55,9 @@ class InvoiceBase(BaseModel):
     status: str
 
 class InvoiceCustomer(BaseModel):
-    phone_number: str
-    username: Optional[str] = None
-    full_name: Optional[str] = None
+    phone_number: Optional[str]
+    username: Optional[str]
+    full_name: str
     
 class InvoiceUpdate(InvoiceBase):
     line_items: List[LineItemCreate]
@@ -64,15 +66,23 @@ class InvoiceUpdate(InvoiceBase):
 class InvoiceCreate(InvoiceUpdate):
     business_name: str
     username: str
-    customer: InvoiceCustomer
+    customer: InvoiceCustomer | None = None
+    customer_name: str
+    customer_phone: Optional[str]
     
     
-class InvoiceOut(InvoiceUpdate):
+class InvoiceOut(BaseModel):
     business_name: str
-    customer: UserOut
+    customer: Optional[UserOut]
+    customer_name: str
+    customer_phone: Optional[str]
     invoice_number: str
     created_at: datetime
     line_items: List[LineItemOut]
+    notes: Optional[str] 
+    total_amount: float
+    due_date: datetime
+    status: str
 
     class Config:
         from_attributes = True

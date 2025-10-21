@@ -5,12 +5,11 @@ import { AuthSelector } from "./AuthSelector";
 export const AuthPage = () => {
   const selectedAction = useAuthStore((state) => state.selectedAction);
 
-
   if (selectedAction === "register" || selectedAction === "login") {
     return <AuthForms />;
   }
 
-    if (!selectedAction) {
+  if (!selectedAction) {
     return <AuthSelector />;
   }
 };

@@ -58,3 +58,16 @@ export const useSubmitRegistrationDetails = ({
     },
   });
 };
+
+export const useProceedWithGuestAccount = () => {
+  // Not an API
+  const { setUseGuestAccount } = useUserDetailsStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
+
+  return () => {
+    setUseGuestAccount(true);
+    navigate(from, { replace: true });
+  };
+};

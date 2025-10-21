@@ -16,7 +16,9 @@ from app.security import verify_password
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -30,6 +32,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Se
         token_data = TokenData(username=username)
     except InvalidTokenError:
         raise credentials_exception
+    assert token_data.username is not None
     user = get_user(db, username=token_data.username)
     if user is None:
         raise credentials_exception
@@ -43,6 +46,7 @@ async def get_current_active_user(
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 def authenticate_user(db: Session, phone_number: str, password: str):
     user = get_user_by_phone(db, phone_number)
     if not user:
@@ -50,5 +54,3 @@ def authenticate_user(db: Session, phone_number: str, password: str):
     if not verify_password(password, user.password):
         return False
     return user
-
-

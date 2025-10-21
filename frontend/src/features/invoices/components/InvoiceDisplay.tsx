@@ -12,6 +12,7 @@ import {
   Send,
   Edit,
   FileText,
+  Hand,
 } from "lucide-react";
 import { useInvoiceStore } from "../store";
 import { statusThemes } from "../ui/themes";
@@ -21,6 +22,7 @@ import { useDeleteInvoice } from "../hooks/useAPIs";
 import type { InvoiceType } from "../types";
 import { usePhoneNumber } from "../../../hooks/useData";
 import { DeleteButton, GenericButton } from "../../../components/Buttons";
+import FormattedNumber from "../ui/components";
 
 interface InvoiceDisplayProps {
   onDownload?: () => void;
@@ -116,7 +118,8 @@ const LineItemCard: React.FC<{
               Unit Price
             </p>
             <p className="font-bold text-gray-900 text-lg">
-              KES {item.unit_price.toFixed(2)}
+              KES
+              <FormattedNumber value={item.unit_price} />
             </p>
           </div>
         </div>
@@ -134,10 +137,21 @@ const LineItemCard: React.FC<{
             <p
               className={`font-bold text-lg ${theme?.text || "text-gray-900"}`}
             >
-              KES {item.transaction_value.toFixed(2)}
+              KES
+              <FormattedNumber value={item.transaction_value} />
             </p>
           </div>
         </div>
+      </div>
+      <div>
+        {item.description && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h5 className="text-sm font-medium text-gray-700 mb-2">
+              Description
+            </h5>
+            <p className="text-sm text-gray-900">{item.description}</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -164,7 +178,9 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
   };
 
   const onEdit =
-    phoneNumber !== invoice.customer.phone_number
+    invoice.customer &&
+    invoice.customer.phone_number &&
+    invoice.customer?.phone_number != phoneNumber
       ? () => setPopUpType("update")
       : null;
   const onDelete = () => {
@@ -220,7 +236,7 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
 
                 <div className="flex items-center gap-3">
                   {onDownload && (
-                    <GenericButton 
+                    <GenericButton
                       onClick={onDownload}
                       className="py-2 px-4 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl text-gray-700 font-medium transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border border-white/30"
                       buttonText="Download"
@@ -269,7 +285,8 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
                       Total Amount
                     </p>
                     <p className={`text-3xl font-bold ${theme.text}`}>
-                      KES {invoice.total_amount.toLocaleString()}
+                      KES
+                      <FormattedNumber value={invoice.total_amount} />
                     </p>
                   </div>
                 </div>
@@ -299,14 +316,16 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
               >
                 <InfoRow
                   label="Full Name"
-                  value={invoice.customer.full_name}
+                  value={invoice.customer_name}
                   icon={User}
                 />
-                <InfoRow
-                  label="Phone Number"
-                  value={invoice.customer.phone_number}
-                  icon={Phone}
-                />
+                {invoice.customer_phone && (
+                  <InfoRow
+                    label="Phone Number"
+                    value={invoice.customer_phone}
+                    icon={Phone}
+                  />
+                )}
               </ViewSection>
             </div>
 
@@ -369,9 +388,9 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
                     </span>
                     <span className={`font-bold ${theme.text}`}>
                       KES{" "}
-                      {(
-                        invoice.total_amount / invoice.line_items.length
-                      ).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      <FormattedNumber
+                        value={invoice.total_amount / invoice.line_items.reduce((acc, item) => acc + item.quantity, 0)}
+                      />
                     </span>
                   </div>
                 </div>
@@ -381,7 +400,7 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({
             {/* Line Items */}
             <ViewSection
               title="Invoice Items"
-              icon={Package}
+              icon={invoice.line_items[0]?.type === "product" ? Package : Hand}
               status={invoice.status}
             >
               <div className="space-y-6">

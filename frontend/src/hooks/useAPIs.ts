@@ -4,13 +4,14 @@ import { getUserDetailsAPI } from "../api";
 import { useEffect } from "react";
 
 export const useGetUserDetails = () => {
-  const { setUserDetails } = useUserDetailsStore();
+  const { setUserDetails, useGuestAccount } = useUserDetailsStore();
   const query = useQuery({
     queryKey: ["userDetails"],
     queryFn: async () => {
       const response = await getUserDetailsAPI();
       return response;
     },
+    enabled: !useGuestAccount,
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime:24 * 60 * 60 * 1000, // 10 minutes
   });

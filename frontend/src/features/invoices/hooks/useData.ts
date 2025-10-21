@@ -5,7 +5,7 @@ export const useDistinguishInvoiceType = (invoices: InvoiceType[]): InvoiceWithT
   const phoneNumber = usePhoneNumber();
 
   return invoices.map((invoice) => {
-    if (phoneNumber === invoice.customer.phone_number) {
+    if (invoice.customer_phone === phoneNumber) {
       return {
         ...invoice,
         type: "personal",

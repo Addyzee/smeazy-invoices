@@ -21,6 +21,8 @@ import { InvoicesStats } from "./InvoiceStats";
 import { useGetAllUserInvoices } from "../hooks/useAPIs";
 import { StatusBadge } from "../ui/components";
 import { useDistinguishInvoiceType } from "../hooks/useData";
+import { useUserDetailsStore } from "../../../store";
+import { useClearGuestData } from "../hooks/useAPIs";
 
 // Main Invoice Grid Component
 const InvoicesPage = () => {
@@ -34,9 +36,10 @@ const InvoicesPage = () => {
   const filteredInvoices = invoices
     .filter((invoice) => {
       const matchesSearch =
-        invoice.customer.full_name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+        (invoice.customer &&
+          invoice.customer.full_name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
         invoice.invoice_number
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
@@ -87,22 +90,11 @@ const InvoicesPage = () => {
   );
 };
 
-// Header Component
-interface InvoicesPageHeaderProps {
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
-  statusFilter: string;
-  onStatusFilterChange: (value: string) => void;
-  sortBy: string;
-  onSortChange: (value: "date" | "amount" | "status") => void;
-  totalInvoices: number;
-}
-
-interface CreateInvoiceButtonInterface {
+interface CreateInvoiceButtonInterfaceProps {
   text?: string;
 }
 
-const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterface> = ({
+const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterfaceProps> = ({
   text = "New Invoice",
 }) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
@@ -121,6 +113,17 @@ const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterface> = ({
   );
 };
 
+// Header Component
+interface InvoicesPageHeaderProps {
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusFilterChange: (value: string) => void;
+  sortBy: string;
+  onSortChange: (value: "date" | "amount" | "status") => void;
+  totalInvoices: number;
+}
+
 const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
   searchTerm,
   onSearchChange,
@@ -130,7 +133,9 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
   onSortChange,
   totalInvoices,
 }) => {
+  const useGuestAccount = useUserDetailsStore((store) => store.useGuestAccount);
   const { clearAccessAndLogout } = useClearAccessAndLogout();
+  const clearGuestData  = useClearGuestData();
   return (
     <div className="mb-8">
       {/* Title and Create Button */}
@@ -144,12 +149,21 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
           </p>
         </div>
         <div className="flex gap-5">
-          <button
-            onClick={clearAccessAndLogout}
-            className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
-          >
-            <span>Logout</span>
-          </button>
+          {useGuestAccount && (
+            <button
+              onClick={clearGuestData}
+              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+            >
+              <span>Clear Data</span>
+            </button>
+          )}
+            <button
+              onClick={clearAccessAndLogout}
+              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+            >
+              <span>Logout</span>
+            </button>
+
           <CreateInvoiceButton />
         </div>
       </div>
@@ -318,12 +332,10 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
         <div className="flex items-center gap-2 mb-4">
           <User className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="font-medium text-gray-900">
-              {invoice.customer.full_name}
-            </p>
-            <p className="text-sm text-gray-600">
-              {invoice.customer.phone_number}
-            </p>
+            <p className="font-medium text-gray-900">{invoice.customer_name}</p>
+            {invoice.customer_phone && (
+              <p className="text-sm text-gray-600">{invoice.customer_phone}</p>
+            )}
           </div>
         </div>
 
@@ -332,7 +344,7 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Total Amount</span>
             <span className="text-xl font-bold text-gray-900">
-              KES {invoice.total_amount.toLocaleString()}
+              KES {(invoice.total_amount || 0).toLocaleString()}
             </span>
           </div>
         </div>

@@ -3,8 +3,12 @@ import { useGetUserDetails } from "./useAPIs";
 
 export const useUserName = (): string => {
   const userDetails = useUserDetailsStore((state) => state.userDetails);
+  const proceededWithoutAccount = useUserDetailsStore(
+    (state) => state.useGuestAccount
+  );
   const username = useLocalStorage("username");
   const query = useGetUserDetails();
+  if (proceededWithoutAccount) return "guest_user";
   if (userDetails) return userDetails.username;
   if (username) return username;
   if (query.data) return query.data.username;

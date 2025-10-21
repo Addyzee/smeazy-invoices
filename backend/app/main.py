@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from . import models
+from app import models
 from .database import engine
 from .routers import users, invoices
 from fastapi.middleware.cors import CORSMiddleware

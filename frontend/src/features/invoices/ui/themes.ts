@@ -67,4 +67,5 @@ export const statusThemes = {
     border: "border-red-300",
     icon: XCircle,
   },
+  
 };

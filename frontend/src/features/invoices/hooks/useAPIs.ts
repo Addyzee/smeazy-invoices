@@ -6,7 +6,6 @@ import type { InvoiceCreate, InvoiceUpdate } from "../types";
 import { useInvoiceStore } from "../store";
 import { useUserDetailsStore } from "../../../store";
 import { addGuestInvoice, updateGuestInvoice, deleteGuestInvoice } from "../utils/guestStorage";
-import { clearGuestData } from "../utils/guestStorage";
 
 
 export const useGetAllUserInvoices = () => {
@@ -168,14 +167,3 @@ export const useDeleteInvoice = () => {
   });
 };
 
-export const useClearGuestData = () => {
-  const queryClient = useQueryClient();
-  const { useGuestAccount } = useUserDetailsStore();
-
-  return () => {
-    if (useGuestAccount) {
-      clearGuestData();
-    }
-    queryClient.removeQueries({ queryKey: ["invoices"] });
-  };
-};

@@ -56,7 +56,6 @@ class InvoiceBase(BaseModel):
 
 class InvoiceCustomer(BaseModel):
     phone_number: Optional[str]
-    username: Optional[str]
     full_name: str
     
 class InvoiceUpdate(InvoiceBase):

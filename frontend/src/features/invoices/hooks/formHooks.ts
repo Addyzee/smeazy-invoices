@@ -198,7 +198,6 @@ export const useInvoiceForm = ({ mode = "create", setError }: UseInvoiceFormProp
       return;
     }
     if (mode === "create") {
-      console.log("Creating invoice with data:", formData);
       createInvoice.mutate(formData);
       setCurrentInvoice(null);
     } else if ( mode === "duplicate"){
@@ -217,7 +216,6 @@ export const useInvoiceForm = ({ mode = "create", setError }: UseInvoiceFormProp
         line_items: formData.line_items,
         notes: formData.notes,
       };
-      console.log("Updating invoice with data:", updateData);
       updateInvoice.mutate(updateData);
     }
     setPopUpType(null);

@@ -22,9 +22,10 @@ import { useGetAllUserInvoices } from "../hooks/useAPIs";
 import { StatusBadge } from "../ui/components";
 import { useDistinguishInvoiceType } from "../hooks/useData";
 import { useUserDetailsStore } from "../../../store";
-import { useClearGuestData } from "../hooks/useAPIs";
 import { handleDownload } from "../utils/handleDownload";
-
+import { useAuthStore } from "../../auth/store";
+import { useLocation, useNavigate } from "react-router";
+import { useClearGuestData } from "../utils/guestStorage";
 
 // Main Invoice Grid Component
 const InvoicesPage = () => {
@@ -138,6 +139,19 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
   const useGuestAccount = useUserDetailsStore((store) => store.useGuestAccount);
   const { clearAccessAndLogout } = useClearAccessAndLogout();
   const clearGuestData = useClearGuestData();
+  const { setSelectedAction } = useAuthStore();
+
+  const useCreateAccountAndSaveInvoices = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || "/account";
+    return () => {
+      navigate(from, { replace: true });
+      setSelectedAction("register");
+    };
+  };
+  const createAccountAndSaveInvoices = useCreateAccountAndSaveInvoices();
+
   return (
     <div className="mb-8">
       {/* Title and Create Button */}
@@ -151,20 +165,29 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
           </p>
         </div>
         <div className="flex gap-5">
-          {useGuestAccount && (
+          {useGuestAccount ? (
+            <>
+              <button
+                onClick={createAccountAndSaveInvoices}
+                className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-green-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+              >
+                <span>Create Account and Save Invoices</span>
+              </button>
+              <button
+                onClick={clearGuestData}
+                className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+              >
+                <span>Clear Data</span>
+              </button>
+            </>
+          ) : (
             <button
-              onClick={clearGuestData}
-              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+              onClick={clearAccessAndLogout}
+              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
             >
-              <span>Clear Data</span>
+              <span>Logout</span>
             </button>
           )}
-          <button
-            onClick={clearAccessAndLogout}
-            className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
-          >
-            <span>Logout</span>
-          </button>
 
           <CreateInvoiceButton />
         </div>
@@ -244,8 +267,6 @@ const InvoicesGrid: React.FC<InvoicesGridProps> = ({ invoices }) => {
     setCurrentInvoice(invoice);
     setPopUpType("duplicate");
   };
-
-  
 
   const onDownload = (invoice: InvoiceType) => {
     handleDownload(invoice);

@@ -26,12 +26,13 @@ export const useClearAccessAndLogout = () => {
    *  and log out
    */
   const performLogout = usePerformLogout();
-  const { useGuestAccount } = useUserDetailsStore();
+  const { useGuestAccount, setUserDetails } = useUserDetailsStore();
 
   const clearAccessAndLogout = useCallback(() => {
+    setUserDetails(null);
     localStorage.removeItem("access_token");
     performLogout();
-  }, [performLogout]);
+  }, [performLogout, setUserDetails]);
 
   useEffect(() => {
     // Guest users don't need token validation

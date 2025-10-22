@@ -3,7 +3,7 @@ import type { UserType } from "./features/auth/types";
 
 type UserDetailsStoreType = {
   userDetails: UserType | null;
-  setUserDetails: (user: UserType) => void;
+  setUserDetails: (user: UserType | null) => void;
   clearUserDetails: () => void;
   useGuestAccount: boolean;
   setUseGuestAccount: (value: boolean) => void;

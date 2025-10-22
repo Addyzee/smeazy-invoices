@@ -3,6 +3,7 @@ import { loginAPI, registerAPI } from "../api";
 import type { LoginFormType, RegistrationFormType } from "../types";
 import { useLocation, useNavigate } from "react-router";
 import { useUserDetailsStore } from "../../../store";
+import { useMigrateGuestData } from "../../invoices/utils/guestStorage";
 
 interface useSubmitAuthFormProps {
   onSuccessActions?: () => void;
@@ -16,6 +17,10 @@ export const useSubmitLoginDetails = ({
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/";
+  const { useGuestAccount, setUseGuestAccount } = useUserDetailsStore();
+  const migrateGuestData = useMigrateGuestData();
+
+
   return useMutation({
     mutationFn: async (data: LoginFormType) => {
       const response = await loginAPI(data);
@@ -28,6 +33,10 @@ export const useSubmitLoginDetails = ({
         "phone_number",
         JSON.stringify(variables.phone_number)
       );
+      if (useGuestAccount) {
+        setUseGuestAccount(false);
+        migrateGuestData();
+      }
       onSuccessActions?.();
       navigate(from, { replace: true });
     },

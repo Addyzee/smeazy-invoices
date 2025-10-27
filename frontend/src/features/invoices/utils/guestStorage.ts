@@ -99,7 +99,7 @@ export const useClearGuestData = () => {
     if (useGuestAccount) {
       localStorage.removeItem(GUEST_STORAGE_KEYS.INVOICES);
     }
-    queryClient.removeQueries({ queryKey: ["invoices"] });
+    queryClient.setQueryData(["invoices"], []);
     queryClient.invalidateQueries({ queryKey: ["invoices"] });
   };
 };

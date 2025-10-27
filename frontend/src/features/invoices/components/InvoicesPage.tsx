@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Receipt,
   User,
@@ -12,6 +12,7 @@ import {
   Send,
   MoreVertical,
   Copy,
+  Menu,
 } from "lucide-react";
 import type { InvoiceType, InvoiceWithType } from "../types";
 import { useInvoiceStore } from "../store";
@@ -36,7 +37,8 @@ const InvoicesPage = () => {
   const [sortBy, setSortBy] = useState<"date" | "amount" | "status">("date");
 
   // Filter and sort invoices
-  const filteredInvoices = invoices
+  const filteredInvoices = useMemo(() => {
+    return invoices
     .filter((invoice) => {
       const matchesSearch =
         (invoice.customer &&
@@ -64,9 +66,10 @@ const InvoicesPage = () => {
           );
       }
     });
+  }, [invoices, searchTerm, statusFilter, sortBy]);
 
   return (
-    <div className="h-full w-full min-h-screen min-w-screen bg-gradient-to-br from-gray-50 to-primary/10 py-6 px-4 sm:px-6">
+    <div className="h-full w-full overflow-y-scroll pb-20 min-h-screen min-w-screen bg-gradient-to-br from-gray-50 to-primary/10 py-6 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <InvoicesPageHeader
@@ -110,7 +113,7 @@ const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterfaceProps> = ({
         setPopUpType("create");
         setCurrentInvoice(null);
       }}
-      className={`mt-4 sm:mt-0 cursor-pointer bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex justify-center items-center gap-2 w-fit ${className}`}
+      className={`mt-4 sm:mt-0 cursor-pointer bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex gap-2 ${className}`}
     >
       <Plus className="w-5 h-5" />
       <span>{text}</span>
@@ -153,96 +156,168 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
     };
   };
   const createAccountAndSaveInvoices = useCreateAccountAndSaveInvoices();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="mb-8">
-      {/* Title and Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            SMEazy Invoices
+    <div className="mb-8 space-y-6">
+      {/* Header with Title and Actions */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">
+            Invoices
           </h1>
-          <p className="text-gray-600">
-            {totalInvoices} {totalInvoices === 1 ? "invoice" : "invoices"} found
+          <p className="text-sm text-gray-500">
+            {totalInvoices} {totalInvoices === 1 ? "invoice" : "invoices"} total
           </p>
         </div>
-        <div className="flex max-sm:flex-col-reverse gap-5">
+
+        {/* Desktop Action Buttons */}
+        <div className="hidden lg:flex items-center gap-3">
           {useGuestAccount ? (
             <>
               <button
-                onClick={createAccountAndSaveInvoices}
-                className="mt-4  text-center max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-green-800 border-gray-300 cursor-pointer border px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+                onClick={clearGuestData}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <span>Create Account and Save Invoices</span>
+                Clear Data
               </button>
               <button
-                onClick={clearGuestData}
-                className="mt-4 text-center max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 cursor-pointer border-gray-300 border px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+                onClick={createAccountAndSaveInvoices}
+                className="px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg hover:from-green-700 hover:to-green-800 shadow-sm transition-all"
               >
-                <span className="w-full text-center">Clear Data</span>
+                Create Account
               </button>
             </>
           ) : (
             <button
               onClick={clearAccessAndLogout}
-              className="mt-4 shadow-xl max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+              className="px-4 py-2.5 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
             >
-              <span className="w-full text-center">Logout</span>
+              Logout
             </button>
           )}
+          <CreateInvoiceButton />
+        </div>
 
-          <CreateInvoiceButton className="max-sm:w-full text-center" />
+        {/* Mobile/Tablet Hamburger Menu */}
+        <div className="lg:hidden relative">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            aria-label="Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          {menuOpen && (
+            <>
+              <div 
+                className="fixed inset-0 z-40 bg-black/10" 
+                onClick={() => setMenuOpen(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
+                <div className="py-1">
+                  <div
+                    onClick={() => setMenuOpen(false)}
+                    className="border-b border-gray-100"
+                  >
+                    <CreateInvoiceButton 
+                      className="w-full justify-start px-4 py-3 text-sm font-medium rounded-none hover:bg-gray-50"
+                    />
+                  </div>
+                  
+                  {useGuestAccount ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          createAccountAndSaveInvoices();
+                        }}
+                        className="w-full px-4 py-3 text-left text-sm font-medium text-green-700 hover:bg-green-50 transition-colors border-b border-gray-100"
+                      >
+                        Create Account
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMenuOpen(false);
+                          clearGuestData();
+                        }}
+                        className="w-full px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Clear Data
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        clearAccessAndLogout();
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      {/* Search and Filters Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
+        <div className="space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search invoices..."
+              placeholder="Search invoices by number, or customer..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              className="w-full pl-11 pr-4 py-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
             />
           </div>
-          <div className="flex items-center justify-between gap-2 lg:gap-6 lg:flex-nowrap">
-            {/* Status Filter */}
-            <div className="flex items-center gap-1">
-              <Filter className="w-5 h-5 text-gray-400" />
-              <select
-                value={statusFilter}
-                onChange={(e) => onStatusFilterChange(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-              >
-                <option value="all">All Status</option>
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="paid">Paid</option>
-                <option value="overdue">Overdue</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
 
-            {/* Sort */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 whitespace-nowrap ">
-                Sort:
-              </span>
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  onSortChange(e.target.value as "date" | "amount" | "status")
-                }
-                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 w-fit"
-              >
-                <option value="date">Date</option>
-                <option value="amount">Amount</option>
-                <option value="status">Status</option>
-              </select>
+          {/* Filters Row */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+              <Filter className="w-4 h-4" />
+              <span>Filter & Sort</span>
+            </div>
+            
+            <div className="flex flex-1 flex-col sm:flex-row gap-3">
+              {/* Status Filter */}
+              <div className="flex-1">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => onStatusFilterChange(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                >
+                  <option value="all">All Status</option>
+                  <option value="draft">Draft</option>
+                  <option value="sent">Sent</option>
+                  <option value="paid">Paid</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              {/* Sort */}
+              <div className="flex-1">
+                <select
+                  value={sortBy}
+                  onChange={(e) =>
+                    onSortChange(e.target.value as "date" | "amount" | "status")
+                  }
+                  className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                >
+                  <option value="date">Sort by Date</option>
+                  <option value="amount">Sort by Amount</option>
+                  <option value="status">Sort by Status</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>

@@ -103,23 +103,44 @@ interface CreateInvoiceButtonInterfaceProps {
 
 const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterfaceProps> = ({
   text = "New Invoice",
-  className,
+  className = "",
 }) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
   const setCurrentInvoice = useInvoiceStore((state) => state.setCurrentInvoice);
+  
   return (
     <button
       onClick={() => {
         setPopUpType("create");
         setCurrentInvoice(null);
       }}
-      className={`mt-4 sm:mt-0 cursor-pointer bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex gap-2 ${className}`}
+      className={`
+        group relative overflow-hidden
+        bg-gradient-to-r from-blue-600 to-blue-700
+        hover:from-blue-700 hover:to-blue-800
+        text-white font-semibold
+        px-5 py-2.5 rounded-lg
+        shadow-sm hover:shadow-lg
+        transform hover:scale-[1.02] active:scale-[0.98]
+        transition-all duration-200
+        flex items-center justify-center gap-2
+        ${className}
+      `.trim().replace(/\s+/g, ' ')}
     >
-      <Plus className="w-5 h-5" />
-      <span>{text}</span>
+      {/* Shine effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      
+      {/* Icon with animation */}
+      <div className="relative">
+        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+      </div>
+      
+      {/* Text */}
+      <span className="relative text-sm">{text}</span>
     </button>
   );
 };
+
 
 // Header Component
 interface InvoicesPageHeaderProps {

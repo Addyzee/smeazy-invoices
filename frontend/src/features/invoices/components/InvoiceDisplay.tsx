@@ -105,7 +105,7 @@ const LineItemCard: React.FC<{
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-6 max-sm:flex max-sm:flex-col mb-4">
         <div className="text-center">
           <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-3 mb-2">
             <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
@@ -173,10 +173,9 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({ onSend }) => {
     setCurrentInvoice(null);
   };
 
-  const onEdit =
-    invoice.customer ?
-    invoice.customer.phone_number &&
-    invoice.customer?.phone_number != phoneNumber
+  const onEdit = invoice.customer
+    ? invoice.customer.phone_number &&
+      invoice.customer?.phone_number != phoneNumber
       ? () => setPopUpType("update")
       : null
     : () => setPopUpType("update");
@@ -202,7 +201,7 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({ onSend }) => {
   }, []);
 
   return (
-    <div className="invoice-scroll-container h-full w-full overflow-y-auto">
+    <div className="invoice-scroll-container max-w-screen h-full w-full overflow-y-auto">
       {/* Glassmorphism background with animated gradient */}
       <div className={`min-h-full bg-gradient-to-br ${theme.accent} relative`}>
         {/* Decorative background elements */}
@@ -215,78 +214,83 @@ export const InvoiceDisplay: React.FC<InvoiceDisplayProps> = ({ onSend }) => {
           ></div>
         </div>
 
-        <div className="relative z-10 py-8 px-6">
+        <div className="relative z-10 py-4 sm:py-8 px-4 sm:px-6">
           <div className="max-w-3xl mx-auto">
-            {/* Sticky Header with glassmorphism */}
+            {/* Sticky Header with glassmorphism - Compact on mobile */}
             <div
-              className={`sticky top-0 z-20 transition-all duration-300 mb-8 ${
+              className={`sticky top-0 z-20 transition-all duration-300 mb-6 sm:mb-8 ${
                 isScrolled
                   ? "bg-white/80 backdrop-blur-md shadow-lg border border-white/20"
                   : "bg-white/60 backdrop-blur-sm shadow-md border border-white/10"
-              } rounded-2xl p-6`}
+              } rounded-xl sm:rounded-2xl p-3 sm:p-6`}
             >
-              {/* Navigation and Actions Row */}
-              <div className="flex items-center justify-between mb-6">
-                <GenericButton
+              {/* Navigation and Actions Row - Simplified on mobile */}
+              <div className="flex items-center justify-between mb-3 sm:mb-6">
+                <button
                   onClick={onBack}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-all duration-200 hover:bg-white/60 rounded-lg px-3 py-2"
-                  Icon={ArrowLeft}
-                  buttonText="Back to Invoices"
-                />
+                  className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 transition-all duration-200 hover:bg-white/60 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-sm sm:text-base"
+                >
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Back to Invoices</span>
+                  <span className="sm:hidden">Back</span>
+                </button>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   {onDownload && (
-                    <GenericButton
+                    <button
                       onClick={onDownload}
-                      className="py-2 px-4 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-xl text-gray-700 font-medium transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border border-white/30"
-                      buttonText="Download"
-                      Icon={Download}
-                    />
+                      className="p-2 sm:py-2 sm:px-4 bg-white/70 hover:bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl text-gray-700 font-medium transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border border-white/30"
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline text-sm">Download</span>
+                    </button>
                   )}
                   {onSend && (
-                    <GenericButton
+                    <button
                       onClick={onSend}
-                      className={`py-2 px-4 bg-gradient-to-r ${theme.primary} text-white rounded-xl font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2`}
-                      buttonText="Send"
-                      Icon={Send}
-                    />
+                      className={`p-2 sm:py-2 sm:px-4 bg-gradient-to-r ${theme.primary} text-white rounded-lg sm:rounded-xl font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2`}
+                      title="Send"
+                    >
+                      <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline text-sm">Send</span>
+                    </button>
                   )}
                 </div>
               </div>
 
-              {/* Invoice Header with enhanced styling */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-4 mb-3">
-                    <div
-                      className={`w-16 h-16 bg-gradient-to-r ${theme.primary} rounded-2xl flex items-center justify-center shadow-xl`}
-                    >
-                      <Receipt className="w-8 h-8 text-white" />
+              {/* Invoice Header - Stacked on mobile, side-by-side on desktop */}
+              <div className="space-y-3 sm:space-y-0 sm:flex sm:items-start sm:justify-between sm:gap-4">
+                {/* Left side - Invoice info */}
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                  <div
+                    className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${theme.primary} rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0`}
+                  >
+                    <Receipt className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <h1 className="text-xl sm:text-3xl font-bold text-gray-900 truncate">
+                        {invoice.invoice_number}
+                      </h1>
+                      <StatusBadge status={invoice.status} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h1 className="text-3xl font-bold text-gray-900">
-                          {invoice.invoice_number}
-                        </h1>
-                        <StatusBadge status={invoice.status} />
-                      </div>
-                      <p className="text-lg text-gray-600 font-medium">
-                        {invoice.business_name}
-                      </p>
-                    </div>
+                    <p className="text-sm sm:text-lg text-gray-600 font-medium truncate">
+                      {invoice.business_name}
+                    </p>
                   </div>
                 </div>
 
-                <div className="text-right">
+                {/* Right side - Total amount - Full width on mobile */}
+                <div className="sm:text-right w-full sm:w-auto">
                   <div
-                    className={`bg-gradient-to-r ${theme.accent} rounded-2xl p-4 border ${theme.border} shadow-lg`}
+                    className={`bg-gradient-to-r ${theme.accent} rounded-xl sm:rounded-2xl p-3 sm:p-4 border ${theme.border} shadow-lg`}
                   >
-                    <p className="text-sm font-medium text-gray-600 mb-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-0.5 sm:mb-1">
                       Total Amount
                     </p>
-                    <p className={`text-3xl font-bold ${theme.text}`}>
-                      KES
-                      <FormattedNumber value={invoice.total_amount} />
+                    <p className={`text-2xl sm:text-3xl font-bold ${theme.text}`}>
+                      KES <FormattedNumber value={invoice.total_amount} />
                     </p>
                   </div>
                 </div>

@@ -19,6 +19,10 @@ export const usePhoneNumber = (): string => {
   const userDetails = useUserDetailsStore((state) => state.userDetails);
   const phone_number = useLocalStorage("phone_number");
   const query = useGetUserDetails();
+  const proceededWithoutAccount = useUserDetailsStore(
+    (state) => state.useGuestAccount
+  );
+  if (proceededWithoutAccount) return "0000000000";
   if (userDetails) return userDetails.phone_number;
   if (phone_number) return phone_number;
   if (query.data) return query.data.phone_number;

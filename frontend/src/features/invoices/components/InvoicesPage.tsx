@@ -95,10 +95,12 @@ const InvoicesPage = () => {
 
 interface CreateInvoiceButtonInterfaceProps {
   text?: string;
+  className?: string;
 }
 
 const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterfaceProps> = ({
   text = "New Invoice",
+  className,
 }) => {
   const setPopUpType = useInvoiceStore((state) => state.setPopUpType);
   const setCurrentInvoice = useInvoiceStore((state) => state.setCurrentInvoice);
@@ -108,7 +110,7 @@ const CreateInvoiceButton: React.FC<CreateInvoiceButtonInterfaceProps> = ({
         setPopUpType("create");
         setCurrentInvoice(null);
       }}
-      className="mt-4 sm:mt-0 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2 w-fit"
+      className={`mt-4 sm:mt-0 cursor-pointer bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex justify-center items-center gap-2 w-fit ${className}`}
     >
       <Plus className="w-5 h-5" />
       <span>{text}</span>
@@ -164,32 +166,32 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
             {totalInvoices} {totalInvoices === 1 ? "invoice" : "invoices"} found
           </p>
         </div>
-        <div className="flex gap-5">
+        <div className="flex max-sm:flex-col-reverse gap-5">
           {useGuestAccount ? (
             <>
               <button
                 onClick={createAccountAndSaveInvoices}
-                className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-green-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+                className="mt-4  text-center max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-green-800 border-gray-300 cursor-pointer border px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
               >
                 <span>Create Account and Save Invoices</span>
               </button>
               <button
                 onClick={clearGuestData}
-                className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+                className="mt-4 text-center max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 cursor-pointer border-gray-300 border px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
               >
-                <span>Clear Data</span>
+                <span className="w-full text-center">Clear Data</span>
               </button>
             </>
           ) : (
             <button
               onClick={clearAccessAndLogout}
-              className="mt-4 sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
+              className="mt-4 shadow-xl max-sm:w-full sm:mt-0 bg-gradient-to-r from-gray-100 to-gray-200 text-red-500 border-gray-300 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
             >
-              <span>Logout</span>
+              <span className="w-full text-center">Logout</span>
             </button>
           )}
 
-          <CreateInvoiceButton />
+          <CreateInvoiceButton className="max-sm:w-full text-center" />
         </div>
       </div>
 
@@ -207,40 +209,41 @@ const InvoicesPageHeader: React.FC<InvoicesPageHeaderProps> = ({
               className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
             />
           </div>
+          <div className="flex items-center justify-between gap-2 lg:gap-6 lg:flex-nowrap">
+            {/* Status Filter */}
+            <div className="flex items-center gap-1">
+              <Filter className="w-5 h-5 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => onStatusFilterChange(e.target.value)}
+                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+              >
+                <option value="all">All Status</option>
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-            >
-              <option value="all">All Status</option>
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-
-          {/* Sort */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 whitespace-nowrap">
-              Sort by:
-            </span>
-            <select
-              value={sortBy}
-              onChange={(e) =>
-                onSortChange(e.target.value as "date" | "amount" | "status")
-              }
-              className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
-            >
-              <option value="date">Date</option>
-              <option value="amount">Amount</option>
-              <option value="status">Status</option>
-            </select>
+            {/* Sort */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 whitespace-nowrap ">
+                Sort:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  onSortChange(e.target.value as "date" | "amount" | "status")
+                }
+                className="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 w-fit"
+              >
+                <option value="date">Date</option>
+                <option value="amount">Amount</option>
+                <option value="status">Status</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

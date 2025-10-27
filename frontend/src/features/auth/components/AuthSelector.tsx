@@ -7,7 +7,7 @@ export const AuthSelector: React.FC = () => {
   const setSelectedAction = useAuthStore((state) => state.setSelectedAction);
   const proceedWithGuestAccount = useProceedWithGuestAccount();
   return (
-    <div className="h-full w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+    <div className="h-full w-full flex items-center justify-center p-4 md:overflow-y-scroll sm:p-6 sm:overflow-hidden">
       <div className="text-center w-full">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
           Join Our Platform

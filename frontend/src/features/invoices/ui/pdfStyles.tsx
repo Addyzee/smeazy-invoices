@@ -1,4 +1,6 @@
 import { StyleSheet } from "@react-pdf/renderer";
+import { Text, View } from "@react-pdf/renderer";
+import { type ReactElement } from "react";
 
 // Define stles for PDF document
 export const styles = StyleSheet.create({
@@ -102,12 +104,12 @@ export const styles = StyleSheet.create({
     color: "#4b5563",
   },
   tableRowNoDescription: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
   tableRowWithDescription: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingTop: 12,
     paddingBottom: 4,
     paddingHorizontal: 8,
@@ -118,12 +120,12 @@ export const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: "#e5e7eb",
   },
   descriptionText: {
     fontSize: 9,
-    color: '#6b7280',
-    fontStyle: 'italic',
+    color: "#6b7280",
+    fontStyle: "italic",
     lineHeight: 1.4,
   },
   colDescription: {
@@ -246,4 +248,202 @@ export const getStatusColor = (status: keyof typeof pdfStatusThemes) => {
     return pdfStatusThemes[normalizedStatus];
   }
   return pdfStatusThemes.draft;
+};
+
+interface MarkdownStyles {
+  descriptionText: any;
+}
+
+export const parseMarkdownDescription = (
+  markdown: string,
+  styles: MarkdownStyles
+): ReactElement[] => {
+  if (!markdown) return [];
+
+  const lines = markdown.trim().split("\n");
+  const elements: ReactElement[] = [];
+  let key = 0;
+
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+
+    // Skip empty lines
+    if (!trimmedLine) {
+      return;
+    }
+
+    // H1 Heading (# text)
+    if (trimmedLine.startsWith("# ")) {
+      elements.push(
+        <Text
+          key={key++}
+          style={[
+            styles.descriptionText,
+            {
+              fontWeight: "bold",
+              fontSize: 11,
+              fontStyle: "normal",
+              marginBottom: 6,
+              marginTop: index > 0 ? 8 : 0,
+              color: "#374151",
+            },
+          ]}
+        >
+          {trimmedLine.replace(/^# /, "")}
+        </Text>
+      );
+    }
+    // H2 Heading (## text)
+    else if (trimmedLine.startsWith("## ")) {
+      elements.push(
+        <Text
+          key={key++}
+          style={[
+            styles.descriptionText,
+            {
+              fontWeight: "bold",
+              fontSize: 9,
+              fontStyle: "normal",
+              marginBottom: 5,
+              marginTop: index > 0 ? 7 : 0,
+              color: "#374151",
+            },
+          ]}
+        >
+          {trimmedLine.replace(/^## /, "")}
+        </Text>
+      );
+    }
+    // H3 Heading (### text)
+    else if (trimmedLine.startsWith("### ")) {
+      elements.push(
+        <Text
+          key={key++}
+          style={[
+            styles.descriptionText,
+            {
+              fontWeight: "bold",
+              fontSize: 8,
+              fontStyle: "normal",
+              marginBottom: 4,
+              marginTop: index > 0 ? 6 : 0,
+              color: "#4b5563",
+            },
+          ]}
+        >
+          {trimmedLine.replace(/^### /, "")}
+        </Text>
+      );
+    }
+    // Unordered list (- text or * text)
+    else if (trimmedLine.match(/^[-*]\s/)) {
+      const content = trimmedLine.replace(/^[-*]\s/, "");
+      elements.push(
+        <View
+          key={key++}
+          style={{ flexDirection: "row", marginLeft: 10, marginBottom: 3 }}
+        >
+          <Text
+            style={[styles.descriptionText, { marginRight: 6, marginTop: 1 }]}
+          >
+            •
+          </Text>
+          <Text style={[styles.descriptionText, { flex: 1 }]}>
+            {parseInlineMarkdown(content)}
+          </Text>
+        </View>
+      );
+    }
+    // Ordered list (1. text, 2. text, etc)
+    else if (trimmedLine.match(/^\d+\.\s/)) {
+      const match = trimmedLine.match(/^(\d+)\.\s(.+)$/);
+      if (match) {
+        const [, number, content] = match;
+        elements.push(
+          <View
+            key={key++}
+            style={{ flexDirection: "row", marginLeft: 10, marginBottom: 3 }}
+          >
+            <Text
+              style={[styles.descriptionText, { marginRight: 6, minWidth: 16 }]}
+            >
+              {number}.
+            </Text>
+            <Text style={[styles.descriptionText, { flex: 1 }]}>
+              {parseInlineMarkdown(content)}
+            </Text>
+          </View>
+        );
+      }
+    }
+    // Regular paragraph
+    else {
+      elements.push(
+        <Text key={key++} style={[styles.descriptionText, { marginBottom: 3 }]}>
+          {parseInlineMarkdown(trimmedLine)}
+        </Text>
+      );
+    }
+  });
+
+  return elements;
+};
+
+// Helper function to parse inline markdown (bold, italic, bold+italic)
+const parseInlineMarkdown = (text: string): (string | ReactElement)[] => {
+  const parts: (string | ReactElement)[] = [];
+  const remaining = text;
+  let key = 0;
+
+  // Regex to match bold+italic (***text***), bold (**text**), and italic (*text* or _text_)
+  const regex = /(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_)/g;
+
+  let match;
+  let lastIndex = 0;
+
+  while ((match = regex.exec(remaining)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(remaining.substring(lastIndex, match.index));
+    }
+
+    const matched = match[0];
+
+    // Bold and Italic (***text***)
+    if (matched.startsWith("***") && matched.endsWith("***")) {
+      parts.push(
+        <Text key={key++} style={{ fontWeight: "bold", fontStyle: "italic" }}>
+          {matched.slice(3, -3)}
+        </Text>
+      );
+    }
+    // Bold (**text**)
+    else if (matched.startsWith("**") && matched.endsWith("**")) {
+      parts.push(
+        <Text key={key++} style={{ fontWeight: "bold" }}>
+          {matched.slice(2, -2)}
+        </Text>
+      );
+    }
+    // Italic (*text* or _text_)
+    else if (
+      (matched.startsWith("*") && matched.endsWith("*")) ||
+      (matched.startsWith("_") && matched.endsWith("_"))
+    ) {
+      parts.push(
+        <Text key={key++} style={{ fontStyle: "italic" }}>
+          {matched.slice(1, -1)}
+        </Text>
+      );
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < remaining.length) {
+    parts.push(remaining.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
 };

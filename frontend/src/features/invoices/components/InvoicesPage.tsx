@@ -69,7 +69,7 @@ const InvoicesPage = () => {
   }, [invoices, searchTerm, statusFilter, sortBy]);
 
   return (
-    <div className="h-full w-full overflow-y-scroll pb-20 min-h-screen min-w-screen bg-gradient-to-br from-gray-50 to-primary/10 py-6 px-4 sm:px-6">
+    <div className="h-full w-full overflow-y-scroll pb-20 min-h-screen min-w-screen bg-gradient-to-br from-gray-50 to-primary/10 py-6 px-4 max-sm:pt-20 sm:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <InvoicesPageHeader

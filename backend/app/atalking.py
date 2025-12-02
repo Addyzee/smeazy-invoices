@@ -1,10 +1,12 @@
 # import package
 import africastalking
 
+from .config import settings
+
 
 # Initialize SDK
-username = "disabled"    # use 'sandbox' for development in the test environment
-api_key = "your_api_key"      # use your sandbox app API key for development in the test environment
+username = settings.at_username    # use 'sandbox' for development in the test environment
+api_key = settings.at_key      # use your sandbox app API key for development in the test environment
 africastalking.initialize(username, api_key)
 
 

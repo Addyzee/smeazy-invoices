@@ -1,17 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from dotenv import load_dotenv
+from .config import settings
 
-import os
-from pathlib import Path
-
-dotenv_path = Path(__file__).parent.parent / '.env.local'
-load_dotenv(dotenv_path)
 
 DATABASE_URL = (
-    f"postgresql://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}"
-    f"@{os.getenv('DATABASE_HOST')}:{os.getenv('DATABASE_PORT')}/{os.getenv('DATABASE_NAME')}"
+    f"postgresql://{settings.database_user}:{settings.database_password}"
+    f"@{settings.database_host}:{settings.database_port}/{settings.database_name}"
 )
 
 

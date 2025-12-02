@@ -2,14 +2,12 @@ from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import jwt
 
+from .config import settings
 
 
-
-SECRET_KEY = "8f1acdd77ede8007d413fd934014ed8eb50154a4fe90a23655d3bed9527ae40c"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
-
-
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -13,6 +13,8 @@ In the frontend folder:
 1. Run `npm install` to install dependencies
 2. Run `npm run dev` to start server
 
+Frontend will be running at `http://localhost:5173`
+
 
 #### Environment Setup
 Create a `.env` file in the backend folder. Use the `.env.example` as a reference.
@@ -20,7 +22,7 @@ Create a `.env` file in the backend folder. Use the `.env.example` as a referenc
 ### Options to run backend
 You can either use docker or run it locally.
 
-### Running locally
+### 1. Running locally
 
 #### Database
 Run a Postgres instance. 
@@ -30,10 +32,14 @@ Run a Postgres instance.
 2. Run `uv sync` to install dependencies
 3. Run `uvicorn app.main:app --reload` to start server
 
-Backend will be running at `http://localhost:8000`
+Backend will be running at `http://127.0.0.1:8000/`
+
+You're ready! Interact with docs at `http://127.0.0.1:8000/docs`
+
+Skip the next steps.
 
 
-### Using docker
+### 2. Using docker
 This setup is used in production and uses a separate reverse proxy(Nginx) to route traffic(though it's not necessary, you can update ports in the compose file to expose the backend directly).
 
 #### Steps
@@ -60,6 +66,8 @@ server {
 }
 ```
 Replace `invoices-web` with the name of your backend service in the docker compose file if different.
+
+You're ready! Interact with docs at `http://localhost/docs`
 
 Should you wish to use SSL, you can set up certbot with nginx. 
 

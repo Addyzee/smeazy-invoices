@@ -3,6 +3,8 @@ The simplest invoicing app  :)
 
 Access at: https://smeazy-invoices.vercel.app
 
+(Still updating docs...)
+
 ## To Run Locally
 After cloning
 
@@ -59,4 +61,6 @@ server {
 ```
 Replace `invoices-web` with the name of your backend service in the docker compose file if different.
 
+Should you wish to use SSL, you can set up certbot with nginx. 
 
+Feel free to reach out, or contribute in whatever way  :)

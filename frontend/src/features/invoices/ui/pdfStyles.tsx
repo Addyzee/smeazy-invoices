@@ -265,12 +265,18 @@ export const parseMarkdownDescription = (
   let key = 0;
 
   lines.forEach((line, index) => {
-    const trimmedLine = line.trim();
+    const trimmedLine = line.trimEnd();
 
     // Skip empty lines
     if (!trimmedLine) {
       return;
     }
+
+    // Calculate indentation level (spaces or tabs)
+    const leadingSpaces = line.match(/^(\s*)/)?.[1] || "";
+    const indentLevel = Math.floor(leadingSpaces.length / 2); // 2 spaces = 1 indent level
+    const baseIndent = 10;
+    const indentAmount = baseIndent + indentLevel * 15;
 
     // H1 Heading (# text)
     if (trimmedLine.startsWith("# ")) {
@@ -335,13 +341,17 @@ export const parseMarkdownDescription = (
         </Text>
       );
     }
-    // Unordered list (- text or * text)
-    else if (trimmedLine.match(/^[-*]\s/)) {
-      const content = trimmedLine.replace(/^[-*]\s/, "");
+    // Unordered list (- text or * text) with indentation support
+    else if (line.match(/^\s*[-*]\s/)) {
+      const content = trimmedLine.replace(/^\s*[-*]\s/, "");
       elements.push(
         <View
           key={key++}
-          style={{ flexDirection: "row", marginLeft: 10, marginBottom: 3 }}
+          style={{
+            flexDirection: "row",
+            marginLeft: indentAmount,
+            marginBottom: 3,
+          }}
         >
           <Text
             style={[styles.descriptionText, { marginRight: 6, marginTop: 1 }]}
@@ -354,15 +364,19 @@ export const parseMarkdownDescription = (
         </View>
       );
     }
-    // Ordered list (1. text, 2. text, etc)
-    else if (trimmedLine.match(/^\d+\.\s/)) {
+    // Ordered list (1. text, 2. text, etc) with indentation support
+    else if (line.match(/^\s*\d+\.\s/)) {
       const match = trimmedLine.match(/^(\d+)\.\s(.+)$/);
       if (match) {
         const [, number, content] = match;
         elements.push(
           <View
             key={key++}
-            style={{ flexDirection: "row", marginLeft: 10, marginBottom: 3 }}
+            style={{
+              flexDirection: "row",
+              marginLeft: indentAmount,
+              marginBottom: 3,
+            }}
           >
             <Text
               style={[styles.descriptionText, { marginRight: 6, minWidth: 16 }]}
@@ -375,6 +389,41 @@ export const parseMarkdownDescription = (
           </View>
         );
       }
+    } else if (trimmedLine.startsWith("> ")) {
+      // Blockquote (> text)
+      const content = trimmedLine.replace(/^>\s/, "");
+      elements.push(
+        <View
+          key={key++}
+          style={{
+            borderLeftWidth: 3,
+            borderLeftColor: "#d1d5db",
+            paddingLeft: 8,
+            marginBottom: 3,
+          }}
+        >
+          <Text
+            style={[
+              styles.descriptionText,
+              { color: "#6b7280", fontStyle: "italic" },
+            ]}
+          >
+            {parseInlineMarkdown(content)}
+          </Text>
+        </View>
+      );
+    } else if (trimmedLine.startsWith("---")) {
+      // Horizontal rule (---)
+      elements.push(
+        <View
+          key={key++}
+          style={{
+            borderBottomWidth: 1,
+            borderBottomColor: "#e5e7eb",
+            marginVertical: 6,
+          }}
+        />
+      );
     }
     // Regular paragraph
     else {

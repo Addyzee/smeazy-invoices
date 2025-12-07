@@ -140,7 +140,7 @@ export const InvoicePDFDocument = ({ invoice }: { invoice: InvoiceType }) => {
         {invoice.notes && (
           <View style={styles.notes}>
             <Text style={styles.notesTitle}>Notes</Text>
-            <Text style={styles.notesText}>{invoice.notes}</Text>
+            {parseMarkdownDescription(invoice.notes, styles)}
           </View>
         )}
 

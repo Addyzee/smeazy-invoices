@@ -148,7 +148,9 @@ const LineItemCard: React.FC<{
       <div>
         {item.description && (
           <div className="prose prose-sm max-w-none p-4 border border-gray-200 rounded-lg bg-gray-50 mt-2">
-            <Markdown>{item.description}</Markdown>
+            {item.description.split("/n").map((line, idx) => (
+              <Markdown key={idx}>{line.trim()}</Markdown>
+            ))}
           </div>
         )}
       </div>
